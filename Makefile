@@ -10,4 +10,6 @@
 SOURCES=creme.ml parser.mly lexer.mll
 RESULT=creme
 
+all: native-code
+
 -include OCamlMakefile
