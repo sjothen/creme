@@ -1,5 +1,3 @@
-module P = Printf
-
 type creme = Number  of int
            | Float   of float
            | Symbol  of string
@@ -14,17 +12,17 @@ let rec creme_to_string x =
   | Number  x      -> string_of_int x
   | Float   f      -> string_of_float f
   | Symbol  s      -> s
-  | String  s      -> P.sprintf "\"%s\"" s
+  | String  s      -> "\"" ^ s ^ "\""
   | Boolean true   -> "#t"
   | Boolean false  -> "#f"
-  | Quoted  c      -> P.sprintf "'%s" (creme_to_string c)
-  | Pair    (h, t) -> P.sprintf "(%s)" (creme_inside h t)
+  | Quoted  c      -> "'" ^ (creme_to_string c)
+  | Pair    (h, t) -> "(" ^ (creme_inside h t) ^ ")"
   | Empty          -> "()"
 
 and creme_inside h t =
   match t with
   | Empty         -> creme_to_string h
-  | Pair (hh, tt) -> String.concat " " [creme_to_string h; creme_inside hh tt]
-  | _             -> String.concat " . " [creme_to_string h; creme_to_string t]
+  | Pair (hh, tt) -> (creme_to_string h) ^ " " ^ (creme_inside hh tt)
+  | _             -> (creme_to_string h) ^ " . " ^ (creme_to_string t)
  
-let rec print_creme x = P.printf "%s" (creme_to_string x)
+let print_creme x = print_endline (creme_to_string x)
