@@ -19,6 +19,7 @@ rule token = parse
   | "#t"                                              { P.BOOLEAN true }
   | "#f"                                              { P.BOOLEAN false }
   | '('                                               { P.LPAREN }
+  | "#("                                              { P.LVECTOR }
   | ')'                                               { P.RPAREN }
   | '.'                                               { P.DOT }
   | '''                                               { P.QUOTE }

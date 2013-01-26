@@ -7,6 +7,7 @@
 %token QUOTE
 %token RPAREN
 %token LPAREN
+%token LVECTOR
 
 %start main
 %type <Creme.creme> main
@@ -17,8 +18,14 @@ main: sexp { $1 }
 
 sexp: atom       { $1 }
     | pair       { $1 }
+    | vector     { $1 }
     | QUOTE sexp { Creme.Quoted $2 }
     ;
+
+vector: LVECTOR invec RPAREN { Creme.Vector (Array.of_list $2) }
+
+invec: sexp invec { $1 :: $2 }
+     | { [] }
 
 pair: LPAREN sexps RPAREN          { $2 }
     ;
