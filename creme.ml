@@ -9,6 +9,8 @@ type creme = Number  of int
            | Vector  of creme array
            | Empty
 
+let (^$) s c = s ^ (String.make 1 c)
+
 let rec creme_to_string x =
   match x with
   | Number  x      -> string_of_int x
@@ -17,7 +19,7 @@ let rec creme_to_string x =
   | String  s      -> "\"" ^ s ^ "\""
   | Char    '\n'   -> "#\\newline"
   | Char    ' '    -> "#\\space"
-  | Char    c      -> "#\\" ^ (String.make 1 c)
+  | Char    c      -> "#\\" ^$ c 
   | Boolean true   -> "#t"
   | Boolean false  -> "#f"
   | Quoted  c      -> "'" ^ (creme_to_string c)
