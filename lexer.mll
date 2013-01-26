@@ -24,6 +24,9 @@ rule token = parse
   | '.'                                               { P.DOT }
   | '''                                               { P.QUOTE }
   | '"'                                               { P.STRING (str (Buffer.create 16) lexbuf) }
+  | "#\\space"                                        { P.CHAR ' ' }
+  | "#\\newline"                                      { P.CHAR '\n' }
+  | "#\\" (_ as c)                                    { P.CHAR c }
   | eof                                               { raise End_of_file }
 and str buf = parse
   | '"'                                               { Buffer.contents buf }

@@ -3,6 +3,7 @@
 %token <string> SYMBOL
 %token <string> STRING
 %token <bool> BOOLEAN
+%token <char> CHAR
 %token DOT
 %token QUOTE
 %token RPAREN
@@ -40,5 +41,6 @@ atom: NUMBER  { Creme.Number $1 }
     | BOOLEAN { Creme.Boolean $1 }
     | STRING  { Creme.String $1 }
     | SYMBOL  { Creme.Symbol $1 }
+    | CHAR    { Creme.Char $1 }
     ;
 %%

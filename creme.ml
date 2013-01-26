@@ -2,6 +2,7 @@ type creme = Number  of int
            | Float   of float
            | Symbol  of string
            | String  of string
+           | Char    of char
            | Boolean of bool
            | Quoted  of creme
            | Pair    of creme * creme
@@ -14,6 +15,9 @@ let rec creme_to_string x =
   | Float   f      -> string_of_float f
   | Symbol  s      -> s
   | String  s      -> "\"" ^ s ^ "\""
+  | Char    '\n'   -> "#\\newline"
+  | Char    ' '    -> "#\\space"
+  | Char    c      -> "#\\" ^ (String.make 1 c)
   | Boolean true   -> "#t"
   | Boolean false  -> "#f"
   | Quoted  c      -> "'" ^ (creme_to_string c)
