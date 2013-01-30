@@ -19,4 +19,5 @@ let rec repl_ f =
   | E.Undefined_symbol s -> perror "undefined symbol %s\n" s; repl_ f
 
 let _ =
+  E.def_primitives ();
   repl_ (fun () -> repl "> " (Lexing.from_channel stdin))

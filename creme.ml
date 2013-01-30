@@ -1,4 +1,7 @@
-type creme = Number  of int
+module H = Hashtbl
+
+type env = Env of env option * (string, creme) H.t
+and creme = Number  of int
            | Float   of float
            | Symbol  of string
            | String  of string
@@ -7,7 +10,27 @@ type creme = Number  of int
            | Quoted  of creme
            | Pair    of creme * creme
            | Vector  of creme array
+           | Prim    of string * (env -> creme -> creme)
            | Empty
+
+let env_new p = Env (p, H.create 16)
+let env_define (Env (p, h)) k v = H.add h k v
+
+let rec env_find_ht (Env (p, h)) k =
+  if H.mem h k then Some h else
+    match p with
+    | None -> None
+    | Some p -> env_find_ht p k
+
+let env_set e k v =
+  match env_find_ht e k with
+  | None -> env_define e k v
+  | Some ht -> H.replace ht k v
+
+let env_get e k =
+  match env_find_ht e k with
+  | None -> None
+  | Some ht -> Some (H.find ht k)
 
 let (^$) s c = s ^ (String.make 1 c)
 
@@ -26,6 +49,7 @@ let rec creme_to_string x =
   | Pair    (h, t) -> "(" ^ (creme_inside h t) ^ ")"
   | Vector  a      -> "#(" ^ (creme_inside_vec a) ^ ")"
   | Empty          -> "()"
+  | Prim (n, fn)   -> "#(primitive " ^ n ^ ")"
 and creme_inside h t =
   match t with
   | Empty         -> creme_to_string h
