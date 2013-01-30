@@ -4,8 +4,10 @@ module H = Hashtbl
 
 exception Undefined_symbol of string
 exception Apply_error of creme
-exception Number_error
+exception Number_error of string
 exception Empty_error
+exception Arg_error of string * int
+exception Type_error of creme
 
 (* Some useful constants *)
 let t    = Boolean true
@@ -15,17 +17,25 @@ let one  = Number 1
 
 let toplevel = env_new None
 
-let binop env xs fn =
+let binop name env xs fn =
   let rec p env xs acc =
     match xs with
     | Empty -> acc
     | Pair (Number n, t) -> p env t (fn acc n)
-    | _ -> raise Number_error
+    | _ -> raise (Number_error name)
   in
   Number (p env xs 0)
 
-let plus env xs = binop env xs (fun a b -> a + b)
-let minus env xs = binop env xs (fun a b -> a - b)
+let rec minus_ env xs acc fst =
+  match xs with
+  | Pair (Number n, Empty) ->
+      if fst then Number (-n) else Number (acc - n)
+  | Pair (Number n, t) ->
+      minus_ env t (if fst then n else (acc - n)) false
+  | c -> raise (Type_error c)
+
+let plus env xs = binop "+" env xs (fun a b -> a + b)
+let minus env xs = minus_ env xs 0 true
 
 let rec creme_eval e c =
   match c with
