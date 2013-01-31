@@ -33,12 +33,14 @@ let binop name env xs fn start =
   in
   p env xs (Number start)
 
+(* Special form of binary operator where we require at least
+ * a single argument which is treated differently than above. *)
 let rec binop1arg env xs acc fst fn =
   match xs with
   | Pair (h, Empty) ->
       if fst then fn (acc, h) else fn (acc, h)
   | Pair (h, t) ->
-      minus_ env t (if fst then h else fn (acc, h)) false fn
+      binop1arg env t (if fst then h else fn (acc, h)) false fn
   | c -> raise (Type_error c)
 
 let plus env xs = binop "+" env xs (binop1 ( +. ) ( + )) 0
