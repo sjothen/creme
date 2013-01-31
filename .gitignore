@@ -1,9 +1,11 @@
 creme
 *.cmx
+*.cmo
 *.cmi
 *.o
 *.mli
 ._d/
+._bcdi/
 ._ncdi/
 lexer.ml
 parser.ml
