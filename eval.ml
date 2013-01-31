@@ -22,6 +22,7 @@ let binop1 ffn ifn = function
   | (Float n, Float m)   -> Float (ffn n m)
   | (Number n, Float m)  -> let fn = float_of_int n in Float (ffn fn m)
   | (Float n, Number m)  -> let fm = float_of_int m in Float (ffn n fm)
+  | (a, b) -> raise (Type_error a)
 
 let binop name env xs fn start =
   let rec p env xs acc =
