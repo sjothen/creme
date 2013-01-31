@@ -9,7 +9,7 @@ let special = [
 let digit = ['0'-'9']
 let alpha = ['a'-'z' 'A'-'Z']
 let space = [' ' '\t' '\n' '\r']
-  
+
 rule token = parse
   | space+                                            { token lexbuf }
   | ';' [^ '\n']* '\n'                                { token lexbuf }

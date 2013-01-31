@@ -17,25 +17,34 @@ let one  = Number 1
 
 let toplevel = env_new None
 
-let binop name env xs fn =
+let binop1 ffn ifn = function
+  | (Number n, Number m) -> Number (ifn n m)
+  | (Float n, Float m)   -> Float (ffn n m)
+  | (Number n, Float m)  -> let fn = float_of_int n in Float (ffn fn m)
+  | (Float n, Number m)  -> let fm = float_of_int m in Float (ffn n fm)
+
+let binop name env xs fn start =
   let rec p env xs acc =
     match xs with
     | Empty -> acc
-    | Pair (Number n, t) -> p env t (fn acc n)
+    | Pair (h, t) -> p env t (fn (acc, h))
     | _ -> raise (Number_error name)
   in
-  Number (p env xs 0)
+  p env xs (Number start)
 
-let rec minus_ env xs acc fst =
+let rec binop1arg env xs acc fst fn =
   match xs with
-  | Pair (Number n, Empty) ->
-      if fst then Number (-n) else Number (acc - n)
-  | Pair (Number n, t) ->
-      minus_ env t (if fst then n else (acc - n)) false
+  | Pair (h, Empty) ->
+      if fst then fn (acc, h) else fn (acc, h)
+  | Pair (h, t) ->
+      minus_ env t (if fst then h else fn (acc, h)) false fn
   | c -> raise (Type_error c)
 
-let plus env xs = binop "+" env xs (fun a b -> a + b)
-let minus env xs = minus_ env xs 0 true
+let plus env xs = binop "+" env xs (binop1 ( +. ) ( + )) 0
+let mult env xs = binop "*" env xs (binop1 ( *. ) ( * )) 1
+
+let minus env xs = binop1arg env xs (Number 0) true (binop1 ( -. ) ( - ))
+let divide env xs = binop1arg env xs (Number 1) true (binop1 ( /. ) ( / ))
 
 let rec creme_eval e c =
   match c with
@@ -58,7 +67,9 @@ let def_prim name fn =
 
 let def_primitives () =
   def_prim "+" plus;
-  def_prim "-" minus
+  def_prim "*" mult;
+  def_prim "-" minus;
+  def_prim "/" divide
 
 let eval c =
   creme_eval toplevel c
