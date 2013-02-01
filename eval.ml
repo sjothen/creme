@@ -49,12 +49,27 @@ let mult env xs = binop "*" env xs (binop1 ( *. ) ( * )) 1
 let minus env xs = binop1arg env xs (Number 0) true (binop1 ( -. ) ( - ))
 let divide env xs = binop1arg env xs (Number 1) true (binop1 ( /. ) ( / ))
 
-let rec creme_eval e c =
+let car env p =
+  match p with
+  | Pair (h, t) -> (match h with Pair (hh, tt) -> hh | _ -> raise Empty_error)
+  | _ -> raise Empty_error
+
+let cdr env p =
+  match p with
+  | Pair (h, t) -> (match h with Pair (hh, tt) -> tt | _ -> raise Empty_error)
+  | _ -> raise Empty_error
+
+let rec creme_eval_args e c =
+  match c with
+  | Empty -> Empty
+  | Pair (h, t) -> Pair (creme_eval e h, creme_eval_args e t)
+  | x -> raise (Type_error x)
+and creme_eval e c =
   match c with
   | Quoted f         -> f
   | Pair (h, t)      ->
       (match creme_eval e h with
-      | Prim (n, f) -> f e t
+      | Prim (n, f) -> f e (creme_eval_args e t)
       | c -> raise (Apply_error c))
   | Vector a as v    -> v
   | Empty as e       -> e
@@ -72,7 +87,9 @@ let def_primitives () =
   def_prim "+" plus;
   def_prim "*" mult;
   def_prim "-" minus;
-  def_prim "/" divide
+  def_prim "/" divide;
+  def_prim "car" car;
+  def_prim "cdr" cdr
 
 let eval c =
   creme_eval toplevel c
