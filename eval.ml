@@ -59,6 +59,8 @@ let cdr_ p =
   | Pair (h, t) -> t
   | _ -> raise Empty_error
 
+(* We expect list of args to be a list of a single item, we unwrap
+ * it and pass it to fn. *)
 let unwrap1 env p fn =
   match p with
   | Pair (h, t) -> fn h
@@ -66,11 +68,11 @@ let unwrap1 env p fn =
 
 let compose f g = fun x -> f (g x)
 
-let car env p = unwrap1 env p car_
-let cdr env p = unwrap1 env p cdr_
-let cadr env p = unwrap1 env p (compose car_ cdr_)
-let caar env p = unwrap1 env p (compose car_ car_)
-let cddr env p = unwrap1 env p (compose cdr_ cdr_)
+let car env p   = unwrap1 env p car_
+let cdr env p   = unwrap1 env p cdr_
+let cadr env p  = unwrap1 env p (compose car_ cdr_)
+let caar env p  = unwrap1 env p (compose car_ car_)
+let cddr env p  = unwrap1 env p (compose cdr_ cdr_)
 let caaar env p = unwrap1 env p (compose car_ (compose car_ car_))
 let caadr env p = unwrap1 env p (compose car_ (compose car_ cdr_))
 let cadar env p = unwrap1 env p (compose car_ (compose cdr_ car_))
@@ -91,6 +93,7 @@ and creme_eval e c =
   | Pair (h, t)      ->
       (match creme_eval e h with
       | Prim (n, f) -> f e (creme_eval_args e t)
+      | Special (n, f) -> f e t
       | c -> raise (Apply_error c))
   | Vector a as v    -> v
   | Empty as e       -> e
@@ -100,9 +103,18 @@ and creme_eval e c =
       | Some e -> e)
   | atom             -> atom
 
+let define env args =
+  match args with
+  | Pair (Symbol x, Pair(h, t)) -> env_define env x (creme_eval env h); Undef
+  | _ -> raise Empty_error
+
 let def_prim name fn =
   let p = Prim (name, fn) in
   env_define toplevel name p
+
+let def_spec name fn =
+  let s = Special (name, fn) in
+  env_define toplevel name s
 
 let def_primitives () =
   def_prim "+" plus;
@@ -113,7 +125,8 @@ let def_primitives () =
   def_prim "cdr" cdr;
   def_prim "caar" caar;
   def_prim "cadr" cadr;
-  def_prim "cddr" cddr
+  def_prim "cddr" cddr;
+  def_spec "define" define
 
 let eval c =
   creme_eval toplevel c

@@ -2,16 +2,18 @@ module H = Hashtbl
 
 type env = Env of env option * (string, creme) H.t
 and creme = Number  of int
-           | Float   of float
-           | Symbol  of string
-           | String  of string
-           | Char    of char
-           | Boolean of bool
-           | Quoted  of creme
-           | Pair    of creme * creme
-           | Vector  of creme array
-           | Prim    of string * (env -> creme -> creme)
-           | Empty
+          | Float   of float
+          | Symbol  of string
+          | String  of string
+          | Char    of char
+          | Boolean of bool
+          | Quoted  of creme
+          | Pair    of creme * creme
+          | Vector  of creme array
+          | Prim    of string * (env -> creme -> creme)
+          | Special of string * (env -> creme -> creme)
+          | Empty
+          | Undef
 
 let env_new p = Env (p, H.create 16)
 let env_define (Env (p, h)) k v = H.add h k v
@@ -49,7 +51,9 @@ let rec creme_to_string x =
   | Pair    (h, t) -> "(" ^ (creme_inside h t) ^ ")"
   | Vector  a      -> "#(" ^ (creme_inside_vec a) ^ ")"
   | Empty          -> "()"
+  | Undef          -> "#(undefined)"
   | Prim (n, fn)   -> "#(primitive " ^ n ^ ")"
+  | Special (n, f) -> "#(syntax " ^ n ^ ")"
 and creme_inside h t =
   match t with
   | Empty         -> creme_to_string h

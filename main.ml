@@ -6,7 +6,7 @@ let rec repl prompt buf =
   print_string prompt; flush stdout;
   let tok = P.main L.token buf in
   let evd = E.eval tok in
-  Creme.print_creme evd;
+  (if evd == Creme.Undef then () else Creme.print_creme evd);
   repl prompt buf
 
 let perror = Printf.printf
