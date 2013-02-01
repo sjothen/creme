@@ -49,15 +49,36 @@ let mult env xs = binop "*" env xs (binop1 ( *. ) ( * )) 1
 let minus env xs = binop1arg env xs (Number 0) true (binop1 ( -. ) ( - ))
 let divide env xs = binop1arg env xs (Number 1) true (binop1 ( /. ) ( / ))
 
-let car env p =
+let car_ p =
   match p with
-  | Pair (h, t) -> (match h with Pair (hh, tt) -> hh | _ -> raise Empty_error)
+  | Pair (h, t) -> h
   | _ -> raise Empty_error
 
-let cdr env p =
-  match p with
-  | Pair (h, t) -> (match h with Pair (hh, tt) -> tt | _ -> raise Empty_error)
+let cdr_ p =
+  match p with 
+  | Pair (h, t) -> t
   | _ -> raise Empty_error
+
+let unwrap1 env p fn =
+  match p with
+  | Pair (h, t) -> fn h
+  | _ -> raise Empty_error
+
+let compose f g = fun x -> f (g x)
+
+let car env p = unwrap1 env p car_
+let cdr env p = unwrap1 env p cdr_
+let cadr env p = unwrap1 env p (compose car_ cdr_)
+let caar env p = unwrap1 env p (compose car_ car_)
+let cddr env p = unwrap1 env p (compose cdr_ cdr_)
+let caaar env p = unwrap1 env p (compose car_ (compose car_ car_))
+let caadr env p = unwrap1 env p (compose car_ (compose car_ cdr_))
+let cadar env p = unwrap1 env p (compose car_ (compose cdr_ car_))
+let caddr env p = unwrap1 env p (compose car_ (compose cdr_ cdr_))
+let cdaar env p = unwrap1 env p (compose cdr_ (compose car_ car_))
+let cdadr env p = unwrap1 env p (compose cdr_ (compose car_ cdr_))
+let cddar env p = unwrap1 env p (compose cdr_ (compose cdr_ car_))
+let ccddr env p = unwrap1 env p (compose cdr_ (compose cdr_ cdr_))
 
 let rec creme_eval_args e c =
   match c with
@@ -89,7 +110,10 @@ let def_primitives () =
   def_prim "-" minus;
   def_prim "/" divide;
   def_prim "car" car;
-  def_prim "cdr" cdr
+  def_prim "cdr" cdr;
+  def_prim "caar" caar;
+  def_prim "cadr" cadr;
+  def_prim "cddr" cddr
 
 let eval c =
   creme_eval toplevel c
