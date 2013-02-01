@@ -12,6 +12,8 @@ and creme = Number  of int
           | Vector  of creme array
           | Prim    of string * (env -> creme -> creme)
           | Special of string * (env -> creme -> creme)
+          (* closed-env * args * body *)
+          | Closure of env * creme * creme
           | Empty
           | Undef
 
@@ -54,6 +56,7 @@ let rec creme_to_string x =
   | Undef          -> "#(undefined)"
   | Prim (n, fn)   -> "#(primitive " ^ n ^ ")"
   | Special (n, f) -> "#(syntax " ^ n ^ ")"
+  | Closure (e, a, b) -> "#(closure)" 
 and creme_inside h t =
   match t with
   | Empty         -> creme_to_string h
