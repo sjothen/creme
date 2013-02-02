@@ -71,4 +71,15 @@ and creme_inside_vec a =
   in
   loop a 0 (Array.length a)
 
+let rec env_print e =
+  match e with
+  | Env (Some p, ht) ->
+      (
+      H.iter (fun s c -> Printf.printf "%s => %s\n" s (creme_to_string c)) ht;
+      env_print p
+      )
+  | Env (None, ht) ->
+      H.iter (fun s c -> Printf.printf "%s => %s\n" s (creme_to_string c)) ht;
+      Printf.printf "\n"
+
 let print_creme x = print_endline (creme_to_string x)

@@ -82,6 +82,11 @@ let cdadr env p = unwrap1 env p (compose cdr_ (compose car_ cdr_))
 let cddar env p = unwrap1 env p (compose cdr_ (compose cdr_ car_))
 let ccddr env p = unwrap1 env p (compose cdr_ (compose cdr_ cdr_))
 
+exception CremeException of string
+
+let err s =
+  raise (CremeException s)
+
 let rec zip_to_env e pars args =
   match (pars, args) with
   | (Pair (Symbol ph, pt), Pair (ah, at)) ->
@@ -91,25 +96,27 @@ let rec zip_to_env e pars args =
   | (Symbol restpar, restarg) -> env_define e restpar restarg; e
   | _ -> raise Empty_error
 
-let rec apply_closure c args =
+let rec creme_apply_closure c args =
   match c with
   | Closure (env, params, body) -> 
       let newenv = env_new (Some env) in
       let envwargs = zip_to_env newenv params args in
-      eval_body envwargs body
+      creme_eval_body envwargs body
   | _ -> raise Empty_error
-and eval_body env body =
+and creme_eval_body env body =
   match body with 
   | Pair (form, Empty) -> 
       creme_eval env form
   | Pair (form, t) ->
       ignore (creme_eval env form);
-      eval_body env t
+      creme_eval_body env t
  | _ -> raise Empty_error
 and creme_eval_args e c =
   match c with
   | Empty -> Empty
-  | Pair (h, t) -> Pair (creme_eval e h, creme_eval_args e t)
+  | Pair (h, t) -> 
+      let ea = creme_eval e h in
+      Pair (ea, creme_eval_args e t)
   | x -> raise (Type_error x)
 and creme_eval e c =
   match c with
@@ -118,7 +125,10 @@ and creme_eval e c =
       (match creme_eval e h with
       | Prim (n, f) -> f e (creme_eval_args e t)
       | Special (n, f) -> f e t
-      | Closure (e, a, b) as c -> apply_closure c (creme_eval_args e t)
+      (* Don't match env part as e, it shadows e param in creme_eval *)
+      | Closure (_, a, b) as c ->
+          let eargs = creme_eval_args e t in
+          creme_apply_closure c eargs
       | c -> raise (Apply_error c))
   | Vector a as v    -> v
   | Empty as e       -> e
@@ -128,9 +138,33 @@ and creme_eval e c =
       | Some e -> e)
   | atom             -> atom
 
+let runif env exp =
+  match exp with
+  | Pair (cond, Pair (texp, Empty)) ->
+      let tval = creme_eval env cond in
+      (match tval with
+      | Boolean false -> Undef
+      | _ -> creme_eval env texp)
+  | Pair (cond, Pair (texp, Pair (fexp, Empty))) ->
+      let tval = creme_eval env cond in
+      (match tval with
+      | Boolean false -> creme_eval env fexp
+      | _ -> creme_eval env texp)
+  | _ -> err "if takes 2 or 3 arguments"
+
+let neq env exp =
+  match exp with
+  | Pair (Number n, Pair (Number m, Empty)) -> Boolean (n = m)
+  | _ -> err "= takes 2 number arguments"
+
 let define env args =
   match args with
   | Pair (Symbol x, Pair (h, t)) -> env_define env x (creme_eval env h); Undef
+  | _ -> raise Empty_error
+
+let set env args =
+  match args with
+  | Pair (Symbol x, Pair (h, t)) -> env_set env x (creme_eval env h); Undef
   | _ -> raise Empty_error
 
 let lambda env args =
@@ -152,13 +186,16 @@ let def_primitives () =
   def_prim "*" mult;
   def_prim "-" minus;
   def_prim "/" divide;
+  def_prim "=" neq;
   def_prim "car" car;
   def_prim "cdr" cdr;
   def_prim "caar" caar;
   def_prim "cadr" cadr;
   def_prim "cddr" cddr;
   def_spec "define" define;
-  def_spec "lambda" lambda
+  def_spec "lambda" lambda;
+  def_spec "if" runif;
+  def_spec "set!" set
 
 let eval c =
   creme_eval toplevel c
