@@ -38,12 +38,19 @@ let rec creme_eval_operative dynenv staticenv formals envformal body args =
   | Symbol s -> env_define newenv s (Enviro dynenv)
   | _ -> err "environment formal must be either #ignore or a symbol");
   creme_eval newenv body
+and creme_eval_list e p =
+  match p with
+  | Empty -> Empty
+  | Pair (h, t) -> Pair (creme_eval e h, creme_eval_list e t)
+  | _ -> err "unexpected form in evallist"
 and creme_eval e c =
   match c with
   | Pair (h, t)      ->
       (match creme_eval e h with
       | PrimOperative (_, f) -> f e t
       | Operative (se, f, es, b) -> creme_eval_operative e se f es b t
+      (* Applicative is a wrapper around a PrimOperative *)
+      | Applicative (PrimOperative (_, f)) -> f e (creme_eval_list e t)
       | c -> raise (Apply_error c))
   | Vector a as v    -> v
   | Empty as e       -> e
@@ -56,6 +63,10 @@ and creme_eval e c =
 let def_operative name fn = 
   let po = PrimOperative (name, fn) in
   env_define toplevel name po
+
+let def_applicative name fn =
+  let a = Applicative (PrimOperative (name, fn)) in
+  env_define toplevel name a
 
 let vau env exp =
   match exp with
@@ -77,9 +88,22 @@ let definef env exp =
       Inert
   | _ -> err "$define! requires 2 arguments"
 
+let wrap env exp =
+  match exp with 
+  | Pair (Operative (_, _, _, _) as o, Empty) -> Applicative o
+  | Pair (PrimOperative (_, _) as po, Empty) -> Applicative po
+  | _ -> err "cannot wrap around non-operative"
+
+let unwrap env exp =
+  match exp with
+  | Pair (Applicative o, Empty) -> o
+  | _ -> err "cannot unwrap non-applicative"
+
 let define_base () =
   def_operative "$vau" vau;
-  def_operative "$define!" definef
+  def_operative "$define!" definef;
+  def_applicative "wrap" wrap;
+  def_applicative "unwrap" unwrap
 
 let eval c =
   creme_eval toplevel c
