@@ -7,7 +7,6 @@
 %token INERT
 %token IGNORE
 %token DOT
-%token QUOTE
 %token RPAREN
 %token LPAREN
 %token LVECTOR
@@ -22,7 +21,6 @@ main: sexp { $1 }
 sexp: atom       { $1 }
     | pair       { $1 }
     | vector     { $1 }
-    | QUOTE sexp { Creme.Quoted $2 }
     ;
 
 vector: LVECTOR invec RPAREN { Creme.Vector (Array.of_list $2) }

@@ -1,4 +1,5 @@
 {
+  exception Eof
   module P = Parser
 }
 
@@ -24,12 +25,11 @@ rule token = parse
   | "#("                                              { P.LVECTOR }
   | ')'                                               { P.RPAREN }
   | '.'                                               { P.DOT }
-  | '''                                               { P.QUOTE }
   | '"'                                               { P.STRING (str (Buffer.create 16) lexbuf) }
   | "#\\space"                                        { P.CHAR ' ' }
   | "#\\newline"                                      { P.CHAR '\n' }
   | "#\\" (_ as c)                                    { P.CHAR c }
-  | eof                                               { raise End_of_file }
+  | eof                                               { raise Eof }
 and str buf = parse
   | '"'                                               { Buffer.contents buf }
   | '\\' 'n'                                          { Buffer.add_char buf '\n'; str buf lexbuf }

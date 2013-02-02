@@ -7,13 +7,9 @@ and creme = Number  of int
           | String  of string
           | Char    of char
           | Boolean of bool
-          | Quoted  of creme
           | Pair    of creme * creme
           | Vector  of creme array
-          | Prim    of string * (env -> creme -> creme)
-          | Special of string * (env -> creme -> creme)
           (* closed-env * args * body *)
-          | Closure of env * creme * creme
           | Enviro  of env
           | PrimOperative of string * (env -> creme -> creme)
           (* static-env * formals * env-symbol * body *)
@@ -23,7 +19,6 @@ and creme = Number  of int
           | Empty
           | Inert
           | Ignore
-          | Undef
 
 let env_new p = Env (p, H.create 16)
 let env_define (Env (p, h)) k v = H.add h k v
@@ -57,20 +52,15 @@ let rec creme_to_string x =
   | Char    c      -> "#\\" ^$ c 
   | Boolean true   -> "#t"
   | Boolean false  -> "#f"
-  | Quoted  c      -> "'" ^ (creme_to_string c)
   | Pair    (h, t) -> "(" ^ (creme_inside h t) ^ ")"
   | Vector  a      -> "#(" ^ (creme_inside_vec a) ^ ")"
   | Empty          -> "()"
-  | Undef          -> "#(undefined)"
   | Enviro  e      -> "#(environment)"
   | Operative (_, _, _, _) -> "#(operative)"
   | PrimOperative (n, _) -> "#(operative " ^ n ^ ")"
   | Applicative o  -> "#(applicative)"
   | Inert          -> "#inert"
   | Ignore         -> "#ignore"
-  | Prim (n, fn)   -> "#(primitive " ^ n ^ ")"
-  | Special (n, f) -> "#(syntax " ^ n ^ ")"
-  | Closure (e, a, b) -> "#(closure)" 
 and creme_inside h t =
   match t with
   | Empty         -> creme_to_string h
