@@ -14,7 +14,15 @@ and creme = Number  of int
           | Special of string * (env -> creme -> creme)
           (* closed-env * args * body *)
           | Closure of env * creme * creme
+          | Enviro  of env
+          | PrimOperative of string * (env -> creme -> creme)
+          (* static-env * formals * env-symbol * body *)
+          | Operative of env * creme * creme * creme
+          (* operative *)
+          | Applicative of creme
           | Empty
+          | Inert
+          | Ignore
           | Undef
 
 let env_new p = Env (p, H.create 16)
@@ -54,6 +62,12 @@ let rec creme_to_string x =
   | Vector  a      -> "#(" ^ (creme_inside_vec a) ^ ")"
   | Empty          -> "()"
   | Undef          -> "#(undefined)"
+  | Enviro  e      -> "#(environment)"
+  | Operative (_, _, _, _) -> "#(operative)"
+  | PrimOperative (n, _) -> "#(operative " ^ n ^ ")"
+  | Applicative o  -> "#(applicative)"
+  | Inert          -> "#inert"
+  | Ignore         -> "#ignore"
   | Prim (n, fn)   -> "#(primitive " ^ n ^ ")"
   | Special (n, f) -> "#(syntax " ^ n ^ ")"
   | Closure (e, a, b) -> "#(closure)" 

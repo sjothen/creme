@@ -4,6 +4,8 @@
 %token <string> STRING
 %token <bool> BOOLEAN
 %token <char> CHAR
+%token INERT
+%token IGNORE
 %token DOT
 %token QUOTE
 %token RPAREN
@@ -42,5 +44,7 @@ atom: NUMBER  { Creme.Number $1 }
     | STRING  { Creme.String $1 }
     | SYMBOL  { Creme.Symbol $1 }
     | CHAR    { Creme.Char $1 }
+    | INERT   { Creme.Inert }
+    | IGNORE  { Creme.Ignore }
     ;
 %%

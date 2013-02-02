@@ -18,6 +18,8 @@ rule token = parse
   | digit+ '.' digit+ as f                            { P.FLOAT (float_of_string f) }
   | "#t"                                              { P.BOOLEAN true }
   | "#f"                                              { P.BOOLEAN false }
+  | "#inert"                                          { P.INERT }
+  | "#ignore"                                         { P.IGNORE }
   | '('                                               { P.LPAREN }
   | "#("                                              { P.LVECTOR }
   | ')'                                               { P.RPAREN }
