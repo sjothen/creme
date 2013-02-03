@@ -80,7 +80,7 @@
 ($define! cddddr ($lambda ((#ignore . (#ignore . (#ignore . (#ignore . x))))) x))
 
 ($define! apply
-  ($lambda (appv arg . out)
+  ($lambda (appv arg . opt)
     (eval (cons (unwrap appv) arg)
           ($if (null? opt)
                (make-environment)
