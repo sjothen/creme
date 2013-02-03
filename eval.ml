@@ -197,10 +197,15 @@ let binop env exp fn start =
 let plus env exp = binop env exp BI.add_big_int BI.zero_big_int
 let mult env exp = binop env exp BI.mult_big_int BI.unit_big_int
 
+let minus env exp =
+  match exp with
+  | Pair (Number a, Pair (Number b, Empty)) ->  Number (BI.sub_big_int a b)
+  | _ -> err "- requires two number arguments"
+
 let neqp env exp =
   match exp with
   | Pair (Number n, Pair (Number m, Empty)) ->
-      if n = m then t else f
+      if BI.eq_big_int n m then t else f
   | _ -> err "=? requires two number arguments"
 
 let define_base () =
@@ -231,7 +236,8 @@ let define_base () =
   def_applicative "operative?" operativep;
   def_applicative "=?" neqp;
   def_applicative "+" plus;
-  def_applicative "*" mult 
+  def_applicative "*" mult;
+  def_applicative "-" minus
  
 let eval c =
   creme_eval toplevel c
