@@ -17,6 +17,7 @@ let rec repl_ f =
   with
   | L.Eof -> exit 0
   | E.Undefined_symbol s -> perror "undefined symbol %s\n" s; repl_ f
+  | E.Apply_error c -> perror "cannot apply %s\n" (Creme.creme_to_string c); repl_ f
 
 let _ =
   E.define_base ();

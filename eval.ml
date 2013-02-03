@@ -51,6 +51,7 @@ and creme_eval e c =
       | Operative (se, f, es, b) -> creme_eval_operative e se f es b t
       (* Applicative is a wrapper around a PrimOperative *)
       | Applicative (PrimOperative (_, f)) -> f e (creme_eval_list e t)
+      | Applicative (Operative (se, f, es, b)) -> creme_eval_operative e se f es b (creme_eval_list e t)
       | c -> raise (Apply_error c))
   | Vector a as v    -> v
   | Empty as e       -> e
@@ -75,7 +76,7 @@ let vau env exp =
       (match formals, envformal with
       | Symbol _, Symbol _ | Ignore, Ignore
       | Pair (_, _), Symbol _ | Symbol _, Ignore
-      | Pair (_, _), Ignore ->
+      | Pair (_, _), Ignore | Ignore, Symbol _ ->
           Operative (env, formals, envformal, body)
       | _ -> err "environment formal parameter must be symbol or #ignore")
   | _ -> err "incorrect form in $vau"
