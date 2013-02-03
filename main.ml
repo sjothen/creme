@@ -9,6 +9,11 @@ let rec repl prompt buf =
   Creme.print_creme evd;
   repl prompt buf
 
+let rec load chan =
+  let tok = P.main L.token chan in
+  ignore (E.eval tok);
+  load chan
+
 let perror = Printf.printf
 
 let rec repl_ f =
@@ -21,4 +26,7 @@ let rec repl_ f =
 
 let _ =
   E.define_base ();
-  repl_ (fun () -> repl "> " (Lexing.from_channel stdin))
+  try
+    load (Lexing.from_channel (open_in "base.crm"))
+  with L.Eof -> 
+    repl_ (fun () -> repl "> " (Lexing.from_channel stdin))
