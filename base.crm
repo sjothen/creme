@@ -18,3 +18,22 @@
          (eval first env)))))
 
 ($define! list (wrap ($vau x #ignore x)))
+
+($define! list*
+  (wrap ($vau args #ignore
+          ($sequence
+            ($define! aux
+              (wrap ($vau ((head . tail)) #ignore
+                      ($if (null? tail)
+                            head
+                            (cons head (aux tail))))))
+            (aux args)))))
+
+
+($define! $vau
+  ((wrap ($vau ($vau) #ignore
+            ($vau (formals eformal . body) env
+              (eval (list $vau formals eformal
+                        (cons $sequence body))
+                    env))))
+    $vau))
