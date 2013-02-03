@@ -15,18 +15,25 @@ let rec load chan =
   load chan
 
 let perror = Printf.printf
+let ctos c = Creme.creme_to_string c
+
+let print_exn e =
+  match e with
+  | E.Undefined_symbol s -> perror "undefined symbol %s\n" s
+  | E.Apply_error c      -> perror "cannot apply %s\n" (ctos c)
+  | x                    -> perror "unhandled exception %s\n" (Printexc.to_string x)
 
 let rec repl_ f =
   try
     f ()
   with
   | L.Eof -> exit 0
-  | E.Undefined_symbol s -> perror "undefined symbol %s\n" s; repl_ f
-  | E.Apply_error c -> perror "cannot apply %s\n" (Creme.creme_to_string c); repl_ f
+  | x     -> print_exn x; repl_ f
 
 let _ =
   E.define_base ();
   try
     load (Lexing.from_channel (open_in "base.crm"))
-  with L.Eof -> 
-    repl_ (fun () -> repl "> " (Lexing.from_channel stdin))
+  with
+  | L.Eof -> repl_ (fun () -> repl "> " (Lexing.from_channel stdin))
+  | x     -> print_exn x
