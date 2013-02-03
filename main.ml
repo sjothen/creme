@@ -20,7 +20,7 @@ let ctos c = Creme.creme_to_string c
 let print_exn e =
   match e with
   | E.Undefined_symbol s -> perror "undefined symbol %s\n" s
-  | E.Apply_error c      -> perror "cannot apply %s\n" (ctos c)
+  | E.Apply_error c      -> perror "first argument must be applicative/operative, not %s\n" (ctos c)
   | x                    -> perror "unhandled exception %s\n" (Printexc.to_string x)
 
 let rec repl_ f =
