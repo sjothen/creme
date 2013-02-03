@@ -78,3 +78,10 @@
 ($define! cdaddr ($lambda ((#ignore . (#ignore . ((#ignore . x) . #ignore)))) x))
 ($define! cadddr ($lambda ((#ignore . (#ignore . (#ignore . (x . #ignore))))) x))
 ($define! cddddr ($lambda ((#ignore . (#ignore . (#ignore . (#ignore . x))))) x))
+
+($define! apply
+  ($lambda (appv arg . out)
+    (eval (cons (unwrap appv) arg)
+          ($if (null? opt)
+               (make-environment)
+               (car opt)))))
