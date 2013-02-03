@@ -23,11 +23,13 @@ let rec generate len from =
   else
     generate (len - 1) (L.flatten (L.map (fun x -> ["a"^x; "d"^x]) from))
 
+let genlen n = L.iter (fun x -> print_endline (generatedef x)) (generate n ["a"; "d"])
+
 let _ =
-  L.iter (fun x -> print_endline (generatedef x)) (generate 1 ["a"; "d"]);
+  genlen 1;
   print_endline "";
-  L.iter (fun x -> print_endline (generatedef x)) (generate 2 ["a"; "d"]);
+  genlen 2;
   print_endline "";
-  L.iter (fun x -> print_endline (generatedef x)) (generate 3 ["a"; "d"]);
+  genlen 3;
   print_endline "";
-  L.iter (fun x -> print_endline (generatedef x)) (generate 4 ["a"; "d"])
+  genlen 4
