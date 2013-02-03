@@ -1,7 +1,8 @@
 module H = Hashtbl
+module BI = Big_int
 
 type env = Env of env option * (string, creme) H.t
-and creme = Number  of int
+and creme = Number  of BI.big_int
           | Float   of float
           | Symbol  of string
           | String  of string
@@ -9,10 +10,9 @@ and creme = Number  of int
           | Boolean of bool
           | Pair    of creme * creme
           | Vector  of creme array
-          (* closed-env * args * body *)
           | Enviro  of env
           | PrimOperative of string * (env -> creme -> creme)
-          (* static-env * formals * env-symbol * body *)
+          (* static-env * formals * formal-env * body *)
           | Operative of env * creme * creme * creme
           (* operative *)
           | Applicative of creme
@@ -43,7 +43,7 @@ let (^$) s c = s ^ (String.make 1 c)
 
 let rec creme_to_string x =
   match x with
-  | Number  x      -> string_of_int x
+  | Number  x      -> BI.string_of_big_int x
   | Float   f      -> string_of_float f
   | Symbol  s      -> s
   | String  s      -> "\"" ^ s ^ "\""

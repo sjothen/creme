@@ -1,6 +1,7 @@
 {
   exception Eof
   module P = Parser
+  module BI = Big_int
 }
 
 let special = [
@@ -15,7 +16,7 @@ rule token = parse
   | space+                                            { token lexbuf }
   | ';' [^ '\n']* '\n'                                { token lexbuf }
   | (alpha | special) (alpha | special | digit)* as s { P.SYMBOL s }
-  | digit+ as d                                       { P.NUMBER (int_of_string d) }
+  | digit+ as d                                       { P.NUMBER (BI.big_int_of_string d) }
   | digit+ '.' digit+ as f                            { P.FLOAT (float_of_string f) }
   | "#t"                                              { P.BOOLEAN true }
   | "#f"                                              { P.BOOLEAN false }

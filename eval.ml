@@ -1,6 +1,7 @@
 open Creme
 module L = List
 module H = Hashtbl
+module BI = Big_int
 
 exception Undefined_symbol of string
 exception Apply_error of creme
@@ -14,8 +15,8 @@ exception CremeException of string
 (* Some useful constants *)
 let t    = Boolean true
 let f    = Boolean false
-let zero = Number 0
-let one  = Number 1
+let zero = Number BI.zero_big_int
+let one  = Number BI.unit_big_int
 
 let toplevel = env_new None
 
@@ -183,6 +184,12 @@ let rec applicativep env exp =
   | Pair (Applicative o, tail) -> applicativep env tail
   | _ -> f
 
+let neqp env exp =
+  match exp with
+  | Pair (Number n, Pair (Number m, Empty)) ->
+      if n = m then t else f
+  | _ -> err "=? requires two number arguments"
+
 let define_base () =
   (* 4.1 *)
   def_applicative "boolean?" booleanp;
@@ -208,7 +215,8 @@ let define_base () =
   def_applicative "wrap" wrap;
   def_applicative "unwrap" unwrap;
   def_applicative "applicative?" applicativep;
-  def_applicative "operative?" operativep
+  def_applicative "operative?" operativep;
+  def_applicative "=?" neqp
  
 let eval c =
   creme_eval toplevel c

@@ -1,4 +1,4 @@
-%token <int> NUMBER
+%token <Big_int.big_int> NUMBER
 %token <float> FLOAT
 %token <string> SYMBOL
 %token <string> STRING
