@@ -184,6 +184,19 @@ let rec applicativep env exp =
   | Pair (Applicative o, tail) -> applicativep env tail
   | _ -> f
 
+let binop env exp fn start =
+  let rec aux ns acc =
+    match ns with
+    | Empty -> acc
+    | Pair (Number b, Empty) -> fn acc b
+    | Pair (Number b, t) -> aux t (fn acc b)
+    | _ -> err "+ requires number arguments"
+  in
+  Number (aux exp start)
+
+let plus env exp = binop env exp BI.add_big_int BI.zero_big_int
+let mult env exp = binop env exp BI.mult_big_int BI.unit_big_int
+
 let neqp env exp =
   match exp with
   | Pair (Number n, Pair (Number m, Empty)) ->
@@ -216,7 +229,9 @@ let define_base () =
   def_applicative "unwrap" unwrap;
   def_applicative "applicative?" applicativep;
   def_applicative "operative?" operativep;
-  def_applicative "=?" neqp
+  def_applicative "=?" neqp;
+  def_applicative "+" plus;
+  def_applicative "*" mult 
  
 let eval c =
   creme_eval toplevel c
