@@ -18,6 +18,7 @@ let perror = Printf.printf
 let ctos c = Creme.creme_to_string c
 
 let print_exn e =
+  Printf.printf "error: ";
   match e with
   | E.Undefined_symbol s -> perror "undefined symbol %s\n" s
   | E.Apply_error c      -> perror "first argument must be applicative/operative, not %s\n" (ctos c)
