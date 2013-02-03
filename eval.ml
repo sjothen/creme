@@ -99,11 +99,115 @@ let unwrap env exp =
   | Pair (Applicative o, Empty) -> o
   | _ -> err "cannot unwrap non-applicative"
 
-let define_base () =
-  def_operative "$vau" vau;
-  def_operative "$define!" definef;
-  def_applicative "wrap" wrap;
-  def_applicative "unwrap" unwrap
+let cons env exp =
+  match exp with 
+  | Pair (a, Pair (b, Empty)) -> Pair (a, b)
+  | _ -> err "cons requires 2 arguments"
 
+let rec nullp env exp =
+  match exp with
+  | Empty -> t
+  | Pair (Empty, tail) -> nullp env tail
+  | _ -> f
+
+let rec pairp env exp =
+  match exp with
+  | Empty -> t
+  | Pair (Pair (_, _), tail) -> pairp env tail
+  | _ -> f
+
+let rec eval env exp =
+  match exp with
+  | Pair (expression, Pair (environment, Empty)) -> 
+      (match environment with
+      | Enviro e -> creme_eval e expression
+      | _ -> err "eval requires second argument to be environment")
+  | _ -> err "eval requires 2 arguments"
+
+let makeenv env exp =
+  match exp with 
+  | Empty -> Enviro (env_new None)
+  | _ -> err "make-environment takes 0 arguments"
+
+let rec envp env exp =
+  match exp with
+  | Empty -> t
+  | Pair (Enviro e, tail) -> envp env tail
+  | _ -> f
+
+let rec ignorep env exp =
+  match exp with
+  | Empty -> t
+  | Pair (Ignore, tail) -> ignorep env tail
+  | _ -> f
+
+let rec inertp env exp =
+  match exp with
+  | Empty -> t
+  | Pair (Inert, tail) -> inertp env tail
+  | _ -> f
+
+let oif env exp =
+  match exp with
+  | Pair (test, Pair (consequent, Pair (alternative, Empty))) ->
+      let et = creme_eval env test in
+      (match et with
+      | Boolean true -> creme_eval env consequent
+      | Boolean false -> creme_eval env alternative
+      | _ -> err "test in $if must eval to boolean")
+  | _ -> err "illegal form in $if"
+
+let rec symbolp env exp =
+  match exp with
+  | Empty -> t
+  | Pair (Symbol s, tail) -> symbolp env tail
+  | _ -> f
+
+let rec booleanp env exp =
+  match exp with
+  | Empty -> t
+  | Pair (Boolean b, tail) -> booleanp env tail
+  | _ -> f
+
+let rec operativep env exp =
+  match exp with
+  | Empty -> t
+  | Pair (Operative (_, _, _, _), tail) -> operativep env tail
+  | Pair (PrimOperative (_, _), tail) -> operativep env tail
+  | _ -> f
+
+let rec applicativep env exp =
+  match exp with
+  | Empty -> t
+  | Pair (Applicative o, tail) -> applicativep env tail
+  | _ -> f
+
+let define_base () =
+  (* 4.1 *)
+  def_applicative "boolean?" booleanp;
+  (* 4.4 *)
+  def_applicative "symbol?" symbolp;
+  (* 4.5 *)
+  def_applicative "inert?" inertp;
+  def_operative "$if" oif;
+  (* 4.6 *)
+  def_applicative "cons" cons;
+  def_applicative "null?" nullp;
+  def_applicative "pair?" pairp;
+  (* 4.7 *)
+  (* 4.8 *)
+  def_applicative "environment?" envp;
+  def_applicative "ignore?" ignorep;
+  def_applicative "eval" eval;
+  def_applicative "make-environment" makeenv;
+  (* 4.9 *)
+  def_operative "$define!" definef;
+  (* 4.10 *)
+  def_operative "$vau" vau;
+  def_applicative "wrap" wrap;
+  def_applicative "unwrap" unwrap;
+  def_applicative "applicative?" applicativep;
+  def_applicative "operative?" operativep
+ 
 let eval c =
   creme_eval toplevel c
