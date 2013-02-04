@@ -37,9 +37,7 @@ let rec repl_ f =
 
 let _ =
   E.define_base ();
-  (try
-    load "boot/base.crm"
-  with L.Eof -> () | x -> print_exn x);
+  load "boot/base.crm";
   if Array.length Sys.argv > 1 then
     load Sys.argv.(1)
   else
