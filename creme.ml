@@ -39,6 +39,8 @@ let env_get e k =
   | None -> None
   | Some ht -> Some (H.find ht k)
 
+let toplevel = env_new None
+
 let (^$) s c = s ^ (String.make 1 c)
 
 let rec creme_to_string x =

@@ -3,25 +3,16 @@ module L = List
 module H = Hashtbl
 module BI = Big_int
 
-exception Undefined_symbol of string
-exception Apply_error of creme
-exception Number_error of string
-exception Empty_error
-exception Arg_error of string * int
-exception Type_error of creme
-
-exception CremeException of string
-
 (* Some useful constants *)
 let t    = Boolean true
 let f    = Boolean false
 let zero = Number BI.zero_big_int
 let one  = Number BI.unit_big_int
 
-let toplevel = env_new None
+exception Creme_error of string
 
 let err s =
-  raise (CremeException s)
+  raise (Creme_error s)
 
 let rec match_ptree env ptree args =
   match ptree, args with
@@ -55,7 +46,7 @@ and creme_eval e c =
   | Empty as e       -> e
   | Symbol s         ->
       (match env_get e s with
-      | None -> raise (Undefined_symbol s)
+      | None -> err ("undefined variable " ^ s)
       | Some e -> e)
   | atom             -> atom
 
