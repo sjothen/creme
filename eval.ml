@@ -29,7 +29,7 @@ let rec match_pform env pform args =
   | Empty, Empty               -> ()
   | Symbol s, a                -> env_define env s a
   | Pair (h, t), Pair (ah, at) -> match_pform env h ah; match_pform env t at
-  | _, _                       -> err "unexpected form in match"
+  | x, y                       -> err ("couldn't match ptree " ^ (creme_to_string x) ^ " with " ^ (creme_to_string y))
 
 let rec creme_eval_operative dynenv staticenv formals envformal body args =
   let newenv = env_new (Some staticenv) in
