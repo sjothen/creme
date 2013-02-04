@@ -4,9 +4,9 @@
          1
          (* n (fact (- n 1))))))
 
-($define fact-tail
+($define! fact-tail
   ($lambda (n)
-    ($define aux
+    ($define! aux
       ($lambda (n acc)
         ($if (=? n 0)
              acc
