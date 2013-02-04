@@ -25,6 +25,7 @@ let rec generate len from =
 
 let genlen n = L.iter (fun x -> print_endline (generatedef x)) (generate n ["a"; "d"])
 
+(* Generate definitions for car, cdr, caar, cadr, ... *)
 let _ =
   genlen 1;
   print_endline "";

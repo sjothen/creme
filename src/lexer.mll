@@ -1,5 +1,4 @@
 {
-  exception Eof
   module P = Parser
   module BI = Big_int
 }
@@ -30,7 +29,7 @@ rule token = parse
   | "#\\space"                                        { P.CHAR ' ' }
   | "#\\newline"                                      { P.CHAR '\n' }
   | "#\\" (_ as c)                                    { P.CHAR c }
-  | eof                                               { raise Eof }
+  | eof                                               { P.EOF }
 and str buf = parse
   | '"'                                               { Buffer.contents buf }
   | '\\' 'n'                                          { Buffer.add_char buf '\n'; str buf lexbuf }

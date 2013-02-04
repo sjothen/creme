@@ -10,12 +10,14 @@
 %token RPAREN
 %token LPAREN
 %token LVECTOR
+%token EOF
 
 %start main
-%type <Creme.creme> main
+%type <Creme.creme option> main
 
 %%
-main: sexp { $1 }
+main: sexp { Some $1 }
+    | EOF { None }
     ;
 
 sexp: atom       { $1 }
