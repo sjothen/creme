@@ -88,4 +88,4 @@ let rec env_print e =
       H.iter (fun s c -> Printf.printf "%s => %s\n" s (creme_to_string c)) ht;
       Printf.printf "\n"
 
-let print_creme x = print_endline (creme_to_string x)
+let creme_print x = print_endline (creme_to_string x)
