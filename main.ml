@@ -22,6 +22,7 @@ let print_exn e =
   match e with
   | E.Undefined_symbol s -> perror "undefined symbol %s\n" s
   | E.Apply_error c      -> perror "first argument must be applicative/operative, not %s\n" (ctos c)
+  | E.CremeException s   -> perror "%s\n" s
   | x                    -> perror "unhandled exception %s\n" (Printexc.to_string x)
 
 let rec repl_ f =
