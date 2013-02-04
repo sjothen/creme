@@ -196,6 +196,16 @@ let neqp env exp =
       if BI.eq_big_int n m then t else f
   | _ -> err "=? requires two number arguments"
 
+let display env exp =
+  match exp with
+  | Pair (h, Empty) ->
+      (match h with
+      | String s -> print_string s
+      | Char c -> print_char c
+      | f -> print_string (creme_to_string f));
+      Inert
+  | _ -> err "display requires 1 argument"
+
 let define_base () =
   (* 4.1 *)
   def_applicative "boolean?" booleanp;
@@ -225,7 +235,8 @@ let define_base () =
   def_applicative "=?" neqp;
   def_applicative "+" plus;
   def_applicative "*" mult;
-  def_applicative "-" minus
+  def_applicative "-" minus;
+  def_applicative "display" display
  
 let eval c =
   creme_eval toplevel c
