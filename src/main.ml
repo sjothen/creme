@@ -6,7 +6,7 @@ let rec repl prompt buf =
   print_string prompt; flush stdout;
   let tok = P.main L.token buf in
   let evd = E.eval tok in
-  Creme.print_creme evd;
+  Creme.creme_print evd;
   repl prompt buf
 
 let rec load chan =
@@ -20,8 +20,8 @@ let ctos c = Creme.creme_to_string c
 let print_exn e =
   Printf.printf "error: ";
   match e with
-  | E.Creme_error s   -> perror "%s\n" s
-  | x                    -> perror "unhandled exception %s\n" (Printexc.to_string x)
+  | E.Creme_error s -> perror "%s\n" s
+  | x               -> perror "unhandled exception %s\n" (Printexc.to_string x)
 
 let rec repl_ f =
   try
