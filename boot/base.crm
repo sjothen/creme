@@ -96,3 +96,5 @@
     ($if (null? clauses)
         #inert
         (apply aux clauses))))
+
+($define! newline ($lambda #ignore (display #\newline)))
