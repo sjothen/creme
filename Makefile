@@ -1,6 +1,6 @@
 OCAMLBLDFLAGS=nums.cma
 OCAMLNLDFLAGS=nums.cmxa
-SOURCES=creme.ml eval.ml parser.mly lexer.mll main.ml
+SOURCES=src/creme.ml src/eval.ml src/parser.mly src/lexer.mll src/main.ml
 RESULT=creme
 
 all: native-code

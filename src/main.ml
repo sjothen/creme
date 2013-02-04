@@ -33,7 +33,7 @@ let rec repl_ f =
 let _ =
   E.define_base ();
   try
-    load (Lexing.from_channel (open_in "base.crm"))
+    load (Lexing.from_channel (open_in "boot/base.crm"))
   with
   | L.Eof -> repl_ (fun () -> repl "> " (Lexing.from_channel stdin))
   | x     -> print_exn x
