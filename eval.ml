@@ -23,21 +23,18 @@ let toplevel = env_new None
 let err s =
   raise (CremeException s)
 
-let rec match_pform env pform args =
-  match pform, args with
+let rec match_ptree env ptree args =
+  match ptree, args with
   | Ignore, _                  -> ()
   | Empty, Empty               -> ()
   | Symbol s, a                -> env_define env s a
-  | Pair (h, t), Pair (ah, at) -> match_pform env h ah; match_pform env t at
+  | Pair (h, t), Pair (ah, at) -> match_ptree env h ah; match_ptree env t at
   | x, y                       -> err ("couldn't match ptree " ^ (creme_to_string x) ^ " with " ^ (creme_to_string y))
 
 let rec creme_eval_operative dynenv staticenv formals envformal body args =
   let newenv = env_new (Some staticenv) in
-  match_pform newenv formals args;
-  (match envformal with
-  | Ignore -> ()
-  | Symbol s -> env_define newenv s (Enviro dynenv)
-  | _ -> err "environment formal must be either #ignore or a symbol");
+  match_ptree newenv formals args;
+  match_ptree newenv envformal (Enviro dynenv);
   creme_eval newenv body
 and creme_eval_list e p =
   match p with
@@ -53,7 +50,7 @@ and creme_eval e c =
       (* Applicative is a wrapper around a PrimOperative *)
       | Applicative (PrimOperative (_, f)) -> f e (creme_eval_list e t)
       | Applicative (Operative (se, f, es, b)) -> creme_eval_operative e se f es b (creme_eval_list e t)
-      | c -> raise (Apply_error c))
+      | c -> err ("cannot apply non-operative/applicative " ^ (creme_to_string c) ^ " onto " ^ (creme_to_string t)))
   | Vector a as v    -> v
   | Empty as e       -> e
   | Symbol s         ->
@@ -86,7 +83,7 @@ let definef env exp =
   match exp with
   | Pair (definiend, Pair (expression, Empty)) ->
       let eexp = creme_eval env expression in
-      match_pform env definiend eexp;
+      match_ptree env definiend eexp;
       Inert
   | _ -> err "$define! requires 2 arguments"
 
