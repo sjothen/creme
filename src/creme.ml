@@ -48,7 +48,7 @@ let rec creme_to_string x =
   | Number  x      -> BI.string_of_big_int x
   | Float   f      -> string_of_float f
   | Symbol  s      -> s
-  | String  s      -> "\"" ^ s ^ "\""
+  | String  s      -> "\"" ^ (String.escaped s) ^ "\""
   | Char    '\n'   -> "#\\newline"
   | Char    ' '    -> "#\\space"
   | Char    c      -> "#\\" ^$ c 
