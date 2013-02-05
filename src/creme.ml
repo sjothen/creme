@@ -57,7 +57,8 @@ let creme_cmp fst snd =
     | Ignore, Ignore -> true
     | Pair (h, t), Pair (i, s) -> (cmpaux h i) && (cmpaux t s)
     | PrimOperative (n, f), PrimOperative (m, g) -> f == g
-    | Operative (e1, f1, ef1, b1), Operative (e2, f2, ef2, b2) -> false
+    | Operative (e1, f1, ef1, b1), Operative (e2, f2, ef2, b2) ->
+        (e1 == e2) && (cmpaux f1 f2) && (cmpaux ef1 ef2) && (cmpaux b1 b2)
     | Applicative a, Applicative b -> cmpaux a b
     | _, _ -> false
   in
