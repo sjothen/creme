@@ -242,7 +242,8 @@ let define_base () =
   def_applicative "*" mult;
   def_applicative "-" minus;
   def_applicative "display" display;
-  def_applicative "eq?" eqp
+  def_applicative "eq?" eqp;
+  def_applicative "equal?" eqp
  
 let eval c =
   creme_eval toplevel c
