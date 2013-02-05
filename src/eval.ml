@@ -206,6 +206,11 @@ let display env exp =
       Inert
   | _ -> err "display requires 1 argument"
 
+let eqp env exp =
+  match exp with
+  | Pair (fst, Pair (snd, Empty)) -> creme_cmp fst snd
+  | _ -> err "eq? requires 2 arguments"
+
 let define_base () =
   (* 4.1 *)
   def_applicative "boolean?" booleanp;
@@ -236,7 +241,8 @@ let define_base () =
   def_applicative "+" plus;
   def_applicative "*" mult;
   def_applicative "-" minus;
-  def_applicative "display" display
+  def_applicative "display" display;
+  def_applicative "eq?" eqp
  
 let eval c =
   creme_eval toplevel c

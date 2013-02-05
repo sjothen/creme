@@ -43,6 +43,26 @@ let toplevel = env_new None
 
 let (^$) s c = s ^ (String.make 1 c)
 
+let creme_cmp fst snd =
+  let rec cmpaux f s =
+    match f, s with
+    | Number a, Number b -> BI.eq_big_int a b
+    | Float a, Float b -> a = b
+    | Symbol a, Symbol b -> (String.compare a b) = 0
+    | String a, String b -> (String.compare a b) = 0
+    | Char a, Char b -> a = b
+    | Boolean a, Boolean b -> a = b
+    | Empty, Empty -> true
+    | Inert, Inert -> true
+    | Ignore, Ignore -> true
+    | Pair (h, t), Pair (i, s) -> (cmpaux h i) && (cmpaux t s)
+    | PrimOperative (n, f), PrimOperative (m, g) -> f == g
+    | Operative (e1, f1, ef1, b1), Operative (e2, f2, ef2, b2) -> false
+    | Applicative a, Applicative b -> cmpaux a b
+    | _, _ -> false
+  in
+  Boolean (cmpaux fst snd)
+
 let rec creme_to_string x =
   match x with
   | Number  x      -> BI.string_of_big_int x
