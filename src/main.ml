@@ -1,28 +1,16 @@
-module P = Parser
+module R = Reader
 module L = Lexer
 module E = Eval
 
-exception Parse_error of Lexing.position * int * int * string
-
 let print_exn e =
   match e with
-  | Parse_error (p, l, c, s) -> Printf.printf "error: syntax error\n"
-  | E.Creme_error s          -> Printf.printf "error: %s\n" s
-  | x                        -> Printf.printf "error: unhandled exception %s\n" (Printexc.to_string x)
-
-let parse buf =
-  try
-    P.main L.token buf
-  with ex ->
-    let curr = buf.Lexing.lex_curr_p in
-    let line = curr.Lexing.pos_lnum in
-    let cnum = curr.Lexing.pos_cnum - curr.Lexing.pos_bol in
-    let tok = Lexing.lexeme buf in
-    raise (Parse_error (curr, line, cnum, tok))
+  | R.Read_error (l, c, s) -> Printf.printf "error: syntax error\n"
+  | E.Creme_error s        -> Printf.printf "error: %s\n" s
+  | x                      -> Printf.printf "error: unhandled exception %s\n" (Printexc.to_string x)
 
 let rec repl prompt buf =
   print_string prompt; flush stdout;
-  let tok = parse buf in
+  let tok = R.read buf in
   match tok with
   | Some t ->
       let evd = E.eval t in
@@ -33,7 +21,7 @@ let rec repl prompt buf =
 
 let load fname =
   let rec aux c =
-    let tok = parse c in
+    let tok = R.read c in
     match tok with
     | Some t -> ignore (E.eval t); aux c
     (* EOF *)
