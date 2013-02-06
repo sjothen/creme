@@ -7,5 +7,6 @@ creme
 ._d/
 ._bcdi/
 ._ncdi/
+a.out
 lexer.ml
 parser.ml
