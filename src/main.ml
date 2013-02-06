@@ -4,7 +4,7 @@ module E = Eval
 
 let print_exn e =
   match e with
-  | R.Read_error (l, c, s) -> Printf.printf "error: syntax error\n"
+  | R.Read_error (l, c, s) -> Printf.printf "read error: %s on line %d, char %d\n" s l c
   | E.Creme_error s        -> Printf.printf "error: %s\n" s
   | x                      -> Printf.printf "error: unhandled exception %s\n" (Printexc.to_string x)
 
