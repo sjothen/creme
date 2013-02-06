@@ -1,13 +1,14 @@
 module L = Lexer
 module C = Creme
 
-exception Read_error of int * int * string
+exception Read_error of string * int * int * string
 
 let err buf str =
   let curr = buf.Lexing.lex_curr_p in
   let line = curr.Lexing.pos_lnum in
   let cnum = curr.Lexing.pos_cnum - curr.Lexing.pos_bol in
-  raise (Read_error (line, cnum, str))
+  let name = curr.Lexing.pos_fname in 
+  raise (Read_error (name, line, cnum, str))
 
 let token_to_creme buf t =
   match t with
