@@ -98,3 +98,90 @@
         (apply aux clauses))))
 
 ($define! newline ($lambda #ignore (display #\newline)))
+
+($define! get-list-metrics
+  ($lambda (ls)
+    ($define! aux
+      ($lambda (kth k nth n)
+        ($if (>=? k n)
+             ($if (pair? (cdr nth))
+                  (aux ls 0 (cdr nth) (+ n 1))
+                  (list (+ n 1)
+                        ($if (null? (cdr nth)) 1 0)
+                        (+ n 1)
+                        0))
+             ($if (eq? kth nth)
+                  (list n 0 k (- n k))
+                  (aux (cdr kth) (+ k 1) nth n)))))
+    ($if (pair? ls)
+         (aux ls 0 ls 0)
+         (list 0 ($if (null? ls) 1 0) 0 0))))
+
+($define! list-tail
+  ($lambda (ls k)
+    ($if (>? k 0)
+         (list-tail (cdr ls) (- k 1))
+         ls)))
+
+($define! length
+  ($lambda (ls)
+    (car (get-list-metrics))))
+
+($define! max
+  ($lambda (a b)
+    ($if (>? a b)
+         a
+         b)))
+
+($define! map
+  ($lambda (f ls)
+    ($if (null? ls)
+         ls
+         (cons (f (car ls))
+               (map f (cdr ls))))))
+
+($define! $let
+  ($vau (bindings . body) env
+    (eval (cons (list* $lambda (map car bindings) body)
+                (map cadr bindings))
+          env)))
+
+($define! not? ($lambda (x) ($if x #f #t)))
+
+($define! and?
+  ($lambda x
+    ($define! aux
+      ($lambda (x k)
+        ($cond ((<=? k 0) #t)
+               ((car x) (aux (cdr x) (- k 1)))
+               (#t #f))))
+    (aux x (car (get-list-metrics x)))))
+
+($define! or?
+  ($lambda x
+    (not? (apply and? (map not? x)))))
+
+($define! $and?
+  ($vau x e
+    ($cond ((null? x) #t)
+           ((null? (cdr x)) (eval (car x) e))
+           ((eval (car x) e) (apply (wrap $and?) (cdr x) e))
+           (#t #f))))
+
+($define! $or?
+  ($vau x e
+    ($cond ((null? x) #f)
+           ((null? (cdr x)) (eval (car x) e))
+           ((eval (car x) e) #t)
+           (#t (apply (wrap $or?) (cdr x) e)))))
+
+($define! combiner?
+  ($lambda x
+    (apply and? (map ($lambda (x)
+                        (or? (applicative? x)
+                             (operative? x)))
+                     x))))
+
+($define! list-ref
+  ($lambda (ls k)
+    (car (list-tail ls k))))

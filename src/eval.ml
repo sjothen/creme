@@ -211,6 +211,21 @@ let eqp env exp =
   | Pair (fst, Pair (snd, Empty)) -> creme_cmp fst snd
   | _ -> err "eq? requires 2 arguments"
 
+let gtep env exp =
+  match exp with
+  | Pair (Number n, Pair (Number m, Empty)) -> Boolean (BI.ge_big_int n m)
+  | _ -> err ">=? requires 2 number arguments"
+
+let ltep env exp =
+  match exp with
+  | Pair (Number n, Pair (Number m, Empty)) -> Boolean (BI.le_big_int n m)
+  | x -> creme_print x; err "<=? requires 2 number arguments"
+
+let gtp env exp =
+  match exp with
+  | Pair (Number n, Pair (Number m, Empty)) -> Boolean (BI.gt_big_int n m)
+  | _ -> err ">? requires 2 number arguments"
+
 let define_base () =
   (* 4.1 *)
   def_applicative "boolean?" booleanp;
@@ -243,7 +258,10 @@ let define_base () =
   def_applicative "-" minus;
   def_applicative "display" display;
   def_applicative "eq?" eqp;
-  def_applicative "equal?" eqp
+  def_applicative "equal?" eqp;
+  def_applicative ">=?" gtep;
+  def_applicative "<=?" ltep;
+  def_applicative ">?" gtp
  
 let eval c =
   creme_eval toplevel c
