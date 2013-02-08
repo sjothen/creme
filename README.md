@@ -21,7 +21,7 @@ You can, of course, use Creme in a manner similar to you would with Scheme:
 
 Which defines an applicative combiner `map`. An applicative combiner will have its arguments evaluated before being passed to it.
 
-The power of Kernel, however, comes from the `$vau` operative. An operative does not get its arguments evaluated. This allows us to define syntax like `$cond` or `$let`, which be a second-class citizen in Scheme:
+The power of Kernel, however, comes from the `$vau` operative. An operative does not get its arguments evaluated. Instead, we combine `$vau` with the `eval` operative, which allows explicity evaluation of forms. This allows us to define syntax like `$cond` or `$let`:
 
 ```
 ($define! $cond
@@ -34,4 +34,6 @@ The power of Kernel, however, comes from the `$vau` operative. An operative does
     ($if (null? clauses)
          #inert
          (apply aux clauses))))
-``
+```
+
+This means that unlike in Scheme, where macros aren't first-class, we get something similar to macros as first-class citizens. Neat.
