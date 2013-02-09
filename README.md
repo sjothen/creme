@@ -37,3 +37,9 @@ The power of Kernel, however, comes from the `$vau` operative. An operative does
 ```
 
 This means that unlike in Scheme, where macros aren't first-class, we get something similar to macros as first-class citizens. Neat.
+
+## Todo
+
+* Add #o, #b, #x, etc. numerical prefixes
+* Add rational numbers to numerical tower
+* Improve environment support
