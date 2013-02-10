@@ -16,6 +16,12 @@
     | LVECTOR
     | EOF
 
+  let char_to_num c =
+    let code = Char.code c in
+    if code >= 48 && code <= 57 then code - 48 else
+    if code >= 65 && code <= 70 then code - 65 + 10 else
+    if code >= 97 && code <= 102 then code - 97 + 10 else -1
+
   let str_to_list s =
     let rec aux len lst =
       if len == 0 then
@@ -25,17 +31,16 @@
     in
     aux (String.length s) []
 
-  let bin_to_bi s =
+  let str_to_bi str shift =
     let rec aux bs bi =
       match bs with
       | []     -> bi
       | h :: t ->
-          if h == '0' then
-            aux t (BI.shift_left_big_int bi 1)
-          else
-            aux t (BI.add_big_int (BI.shift_left_big_int bi 1) BI.unit_big_int)
+          let shifted = BI.shift_left_big_int bi shift in
+          let added = BI.add_big_int shifted (BI.big_int_of_int h) in
+          aux t added
     in
-    aux (List.rev (str_to_list s)) BI.zero_big_int
+    aux (List.map char_to_num (str_to_list str)) BI.zero_big_int
 }
 
 let special = [
@@ -44,6 +49,8 @@ let special = [
 ]
 let digit = ['0'-'9']
 let alpha = ['a'-'z' 'A'-'Z']
+let hex = ['a'-'f' 'A'-'F']
+let oct = ['0'-'7']
 let space = [' ' '\t' '\n' '\r']
 
 rule token = parse
@@ -53,7 +60,9 @@ rule token = parse
   | (alpha | special) (alpha | special | digit)* as s { SYMBOL s }
   | digit+ as d                                       { NUMBER (BI.big_int_of_string d) }
   | digit+ '.' digit+ as f                            { FLOAT (float_of_string f) }
-  | "#b" (('0' | '1')+ as b)                          { NUMBER (bin_to_bi b) }
+  | "#b" (('0' | '1')+ as b)                          { NUMBER (str_to_bi b 1) }
+  | "#x" (hex+ as h)                                  { NUMBER (str_to_bi h 4) }
+  | "#o" (oct+ as o)                                  { NUMBER (str_to_bi o 3) }
   | "#t"                                              { BOOLEAN true }
   | "#f"                                              { BOOLEAN false }
   | "#inert"                                          { INERT }
