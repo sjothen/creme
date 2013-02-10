@@ -15,6 +15,27 @@
     | LPAREN
     | LVECTOR
     | EOF
+
+  let str_to_list s =
+    let rec aux len lst =
+      if len == 0 then
+        lst
+      else
+        aux (len - 1) (s.[len - 1] :: lst)
+    in
+    aux (String.length s) []
+
+  let bin_to_bi s =
+    let rec aux bs bi =
+      match bs with
+      | []     -> bi
+      | h :: t ->
+          if h == '0' then
+            aux t (BI.shift_left_big_int bi 1)
+          else
+            aux t (BI.add_big_int (BI.shift_left_big_int bi 1) BI.unit_big_int)
+    in
+    aux (List.rev (str_to_list s)) BI.zero_big_int
 }
 
 let special = [
@@ -32,6 +53,7 @@ rule token = parse
   | (alpha | special) (alpha | special | digit)* as s { SYMBOL s }
   | digit+ as d                                       { NUMBER (BI.big_int_of_string d) }
   | digit+ '.' digit+ as f                            { FLOAT (float_of_string f) }
+  | "#b" (('0' | '1')+ as b)                          { NUMBER (bin_to_bi b) }
   | "#t"                                              { BOOLEAN true }
   | "#f"                                              { BOOLEAN false }
   | "#inert"                                          { INERT }
