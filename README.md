@@ -40,6 +40,6 @@ This means that unlike in Scheme, where macros aren't first-class, we get someth
 
 ## Todo
 
-* Add #o, #b, #x, etc. numerical prefixes
+* Add <del>#o, #b, #x</del>, etc. numerical prefixes
 * Add rational numbers to numerical tower
 * Improve environment support
