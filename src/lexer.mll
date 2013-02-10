@@ -63,6 +63,7 @@ rule token = parse
   | "#b" (('0' | '1')+ as b)                          { NUMBER (str_to_bi b 1) }
   | "#x" (hex+ as h)                                  { NUMBER (str_to_bi h 4) }
   | "#o" (oct+ as o)                                  { NUMBER (str_to_bi o 3) }
+  | "#d" (digit+ as d)                                { NUMBER (BI.big_int_of_string d) }
   | "#t"                                              { BOOLEAN true }
   | "#f"                                              { BOOLEAN false }
   | "#inert"                                          { INERT }
