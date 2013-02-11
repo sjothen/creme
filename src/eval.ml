@@ -226,6 +226,11 @@ let gtp env exp =
   | Pair (Number n, Pair (Number m, Empty)) -> Boolean (BI.gt_big_int n m)
   | _ -> err ">? requires 2 number arguments"
 
+let ltp env exp =
+  match exp with
+  | Pair (Number n, Pair (Number m, Empty)) -> Boolean (BI.lt_big_int n m)
+  | _ -> err "<? requires 2 number arguments"
+
 let define_base () =
   (* 4.1 *)
   def_applicative "boolean?" booleanp;
@@ -261,7 +266,8 @@ let define_base () =
   def_applicative "equal?" eqp;
   def_applicative ">=?" gtep;
   def_applicative "<=?" ltep;
-  def_applicative ">?" gtp
+  def_applicative ">?" gtp;
+  def_applicative "<?" ltp
  
 let eval c =
   creme_eval toplevel c
