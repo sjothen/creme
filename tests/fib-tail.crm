@@ -1,0 +1,12 @@
+($define! fib-tail
+  ($lambda (n)
+    ($define! aux
+      ($lambda (a b count)
+        ($if (=? count 0)
+             a 
+             (aux (+ a b) a (- count 1)))))
+    (aux 0 1 n)))
+
+; tail-recursive version is very fast
+(display (fib-tail 20))
+(newline)
