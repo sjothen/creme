@@ -40,7 +40,15 @@ This means that unlike in Scheme, where macros aren't first-class, we get someth
 
 ## Todo
 
-* Add <del>#o, #b, #x</del>, etc. numerical prefixes
+* Add <del>#o, #b, #x,</del> #e, #i numerical prefixes
 * Add rational numbers to numerical tower
 * Improve environment support
 * Add to test cases
+* Speed up non-tail-recursive routines?
+
+```
+% time ./creme tests/fib.crm > /dev/null
+./creme tests/fib.crm > /dev/null  5.57s user 0.01s system 99% cpu 5.582 total
+% time ./creme tests/fib-tail.crm > /dev/null 
+./creme tests/fib-tail.crm > /dev/null  0.00s user 0.00s system 86% cpu 0.008 total
+```

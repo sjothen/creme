@@ -1,9 +1,9 @@
 ($define! fib
   ($lambda (n)
-    ($cond ((=? n 0) 0)
-           ((=? n 1) 1)
-           (#t (+ (fib (- n 1)) (fib (- n 2)))))))
-
+    ($if (or? (=? n 0) (=? n 1))
+         n
+         (+ (fib (- n 1)) (fib (- n 2))))))
+          
 ; non-tail recursive version is terribly slow
 (display (fib 20))
 (newline)
