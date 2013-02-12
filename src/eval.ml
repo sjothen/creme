@@ -174,6 +174,40 @@ let rec applicativep env exp =
   | Pair (Applicative o, tail) -> applicativep env tail
   | _ -> f
 
+let to_float a =
+  match a with
+  | Number n      -> Float (BI.float_of_big_int n)
+  | Float fs as f -> f
+  | _             -> err "attempt to cast uncastable to float"
+
+let cast a b =
+  match a, b with
+  | Float f as a, b -> (a, to_float b)
+  | a, (Float f as b) -> (to_float a, b)
+  | a, b -> (a, b)
+
+let helper name ffn ifn a b =
+  match cast a b with
+  | Float a, Float b -> Float (ffn a b)
+  | Number a, Number b -> Number (ifn a b)
+  | a, b -> err (name ^ ": cannot operate on non-numeric value")
+
+let p = helper "+" ( +. ) BI.add_big_int
+let s = helper "-" ( -. ) BI.sub_big_int
+let d = helper "/" ( /. ) BI.div_big_int
+let m = helper "*" ( *. ) BI.mult_big_int
+
+let twoarg name fn exp =
+  match exp with
+  | Pair (a, Pair (b, Empty)) -> fn a b
+  | _ -> err (name ^ ": requires 2 arguments")
+
+let plus env exp = twoarg "+" p exp
+let mult env exp = twoarg "*" m exp
+let subt env exp = twoarg "-" s exp
+let divd env exp = twoarg "/" d exp
+
+(*
 let binop env exp fn start =
   let rec aux ns acc =
     match ns with
@@ -191,6 +225,7 @@ let minus env exp =
   match exp with
   | Pair (Number a, Pair (Number b, Empty)) ->  Number (BI.sub_big_int a b)
   | _ -> err "- requires two number arguments"
+*)
 
 let neqp env exp =
   match exp with
@@ -233,6 +268,11 @@ let ltp env exp =
   | Pair (Number n, Pair (Number m, Empty)) -> Boolean (BI.lt_big_int n m)
   | _ -> err "<? requires 2 number arguments"
 
+let error env exp =
+  match exp with
+  | Pair (String s, Empty) -> err s
+  | _ -> err "err: requires 1 argument"
+
 let define_base () =
   (* 4.1 *)
   def_applicative "boolean?" booleanp;
@@ -262,14 +302,16 @@ let define_base () =
   def_applicative "=?" neqp;
   def_applicative "+" plus;
   def_applicative "*" mult;
-  def_applicative "-" minus;
+  def_applicative "-" subt;
+  def_applicative "/" divd;
   def_applicative "display" display;
   def_applicative "eq?" eqp;
   def_applicative "equal?" eqp;
   def_applicative ">=?" gtep;
   def_applicative "<=?" ltep;
   def_applicative ">?" gtp;
-  def_applicative "<?" ltp
+  def_applicative "<?" ltp;
+  def_applicative "error" error
  
 let eval c =
   creme_eval toplevel c

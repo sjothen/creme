@@ -185,3 +185,38 @@
 ($define! list-ref
   ($lambda (ls k)
     (car (list-tail ls k))))
+
+($define! foldl
+  ($lambda (f z xs)
+    ($if (null? xs)
+         z
+         (foldl f (f z (car xs)) (cdr xs)))))
+
+; define new plus in terms of a fold of old plus
+($define! +
+  (($lambda (old+)
+    ($lambda xs
+      (foldl old+ 0 xs)))
+   +))
+
+($define! *
+  (($lambda (old*)
+    ($lambda xs
+      (foldl old* 1 xs)))
+   *))
+
+($define! -
+  (($lambda (old-)
+    ($lambda xs
+      ($cond ((null? xs) (error "-: requires at least 1 argument"))
+             ((null? (cdr xs)) (old- 0 (car xs)))
+             (#t (old- (car xs) (apply + (cdr xs)))))))
+   -))
+
+($define! /
+  (($lambda (old/)
+    ($lambda xs
+      ($cond ((null? xs) (error "/: requires at least 1 argument"))
+             ((null? (cdr xs)) (old/ 1 (car xs)))
+             (#t (old/ (car xs) (apply * (cdr xs)))))))
+   /))
