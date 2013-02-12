@@ -125,7 +125,7 @@
 
 ($define! length
   ($lambda (ls)
-    (car (get-list-metrics))))
+    (car (get-list-metrics ls))))
 
 ($define! max
   ($lambda (a b)
