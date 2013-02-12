@@ -39,7 +39,9 @@ and creme_eval e c =
       | PrimOperative (_, f) -> f e t
       | Operative (se, f, es, b) -> creme_eval_operative e se f es b t
       (* Applicative is a wrapper around a PrimOperative *)
-      | Applicative (PrimOperative (_, f)) -> f e (creme_eval_list e t)
+      | Applicative (PrimOperative (_, f)) ->
+            let el = creme_eval_list e t in
+            f e el
       | Applicative (Operative (se, f, es, b)) -> creme_eval_operative e se f es b (creme_eval_list e t)
       | c -> err ("cannot apply non-operative/applicative " ^ (creme_to_string c) ^ " onto " ^ (creme_to_string t)))
   | Vector a as v    -> v
