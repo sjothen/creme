@@ -230,7 +230,9 @@
              acc
              (app-aux (cdr lists) (++ acc (car lists))))))
     (app-aux ls ())))
-      
+
+($define! snoc (flip cons))
+
 ; define new plus in terms of a fold of old plus
 ($define! +
   (($lambda (old+)
