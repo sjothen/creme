@@ -123,10 +123,6 @@
          (list-tail (cdr ls) (- k 1))
          ls)))
 
-($define! length
-  ($lambda (ls)
-    (car (get-list-metrics ls))))
-
 ($define! max
   ($lambda (a b)
     ($if (>? a b)
@@ -192,6 +188,49 @@
          z
          (foldl f (f z (car xs)) (cdr xs)))))
 
+($define! foldr
+  ($lambda (f z xs)
+    ($if (null? xs)
+         z
+         (f (car xs) (foldr f z (cdr xs))))))
+
+($define! length
+  ($lambda (xs)
+    (foldl ($lambda (len x) (+ len 1)) 0 xs)))
+
+($define! flip
+  ($lambda (f)
+    ($lambda (x y)
+      (f y x))))
+
+($define! reverse
+  ($lambda (xs)
+    (foldl (flip cons) () xs)))
+
+($define! filter
+  ($lambda (p? xs)
+    (foldr ($lambda (x xs)
+             ($if (p? x)
+                  (cons x xs)
+                  xs))
+           ()
+           xs)))
+
+; binary list append
+($define! ++
+  ($lambda (xs ys)
+    (foldr cons ys xs)))
+
+; n-ary list append
+($define! append
+  ($lambda ls
+    ($define! app-aux
+      ($lambda (lists acc)
+        ($if (null? lists)
+             acc
+             (app-aux (cdr lists) (++ acc (car lists))))))
+    (app-aux ls ())))
+      
 ; define new plus in terms of a fold of old plus
 ($define! +
   (($lambda (old+)
