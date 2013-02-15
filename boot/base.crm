@@ -182,6 +182,17 @@
   ($lambda (ls k)
     (car (list-tail ls k))))
 
+($define! first   ($lambda (ls) (list-ref ls 0)))
+($define! second  ($lambda (ls) (list-ref ls 1)))
+($define! third   ($lambda (ls) (list-ref ls 2)))
+($define! fourth  ($lambda (ls) (list-ref ls 3)))
+($define! fifth   ($lambda (ls) (list-ref ls 4)))
+($define! sixth   ($lambda (ls) (list-ref ls 5)))
+($define! seventh ($lambda (ls) (list-ref ls 6)))
+($define! eighth  ($lambda (ls) (list-ref ls 7)))
+($define! ninth   ($lambda (ls) (list-ref ls 8)))
+($define! tenth   ($lambda (ls) (list-ref ls 9)))
+
 ($define! foldl
   ($lambda (f z xs)
     ($if (null? xs)
