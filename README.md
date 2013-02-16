@@ -38,23 +38,29 @@ The power of Kernel, however, comes from the `$vau` operative. An operative does
 
 This means that unlike in Scheme, where macros aren't first-class, we get something similar to macros as first-class citizens. Neat.
 
+## Optimizations
+
+While most of Kernel's features can be bootstrapped from a few primitives, it can lead to performance
+issues. The biggest performance gain was gotten by rewriting the `$sequence` operative in OCaml. Further
+performance gains were gotten by doing the same for `$vau` and `$lambda`.
+
+```
+% time ./creme-no-opt tests/tak.crm > /dev/null
+./creme-no-opt tests/tak.crm > /dev/null  19.39s user 0.02s system 99% cpu 19.418 total
+
+% time ./creme-opt-seq tests/tak.crm > /dev/null
+./creme-opt-seq tests/tak.crm > /dev/null  5.13s user 0.01s system 99% cpu 5.142 total
+
+% time ./creme-opt-seq-vau tests/tak.crm > /dev/null
+./creme-opt-seq-vau tests/tak.crm > /dev/null  4.18s user 0.01s system 99% cpu 4.190 total
+
+% time ./creme-opt-seq-vau-lambda tests/tak.crm > /dev/null
+./creme-opt-seq-vau-lambda tests/tak.crm > /dev/null  2.39s user 0.01s system 99% cpu 2.394 total
+```
+
 ## Todo
 
 * Add <del>#o, #b, #x,</del> #e, #i numerical prefixes
 * Add rational numbers to numerical tower
 * Improve environment support
 * Add to test cases
-* Speed up non-tail-recursive routines?
-
-```
-% time ./creme tests/fib.crm > /dev/null
-./creme tests/fib.crm > /dev/null  5.57s user 0.01s system 99% cpu 5.582 total
-% time ./creme tests/fib-tail.crm > /dev/null 
-./creme tests/fib-tail.crm > /dev/null  0.00s user 0.00s system 86% cpu 0.008 total
-```
-
-### Optimizations
-
-While most of Kernel's features can be bootstrapped from a few primitives, it can lead to performance
-issues. The biggest performance gain was gotten by rewriting the `$sequence` operative in OCaml. Further
-performance gains were gotten by doing the same for `$vau` and `$lambda`.
