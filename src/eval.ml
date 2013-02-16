@@ -74,7 +74,6 @@ let def_applicative name fn =
 
 let vau env exp =
   match exp with
-  (* This version of $vau only supports a single body item *)
   | Pair {car=formals; cdr=Pair {car=eformal; cdr=body}} ->
       (match formals, eformal with
       | Symbol _, Symbol _ | Ignore, Ignore
