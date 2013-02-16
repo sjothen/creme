@@ -77,9 +77,11 @@ let vau env exp =
       (match formals, envformal with
       | Symbol _, Symbol _ | Ignore, Ignore
       | Pair (_, _), Symbol _ | Symbol _, Ignore
-      | Pair (_, _), Ignore | Ignore, Symbol _ ->
+      | Pair (_, _), Ignore | Ignore, Symbol _
+      | Empty, Ignore | Empty, Symbol _ ->
           Operative (env, formals, envformal, body)
-      | _ -> err "environment formal parameter must be symbol or #ignore")
+      | _ ->
+          err "environment formal parameter must be symbol or #ignore")
   | _ -> err "incorrect form in $vau"
 
 let definef env exp =
