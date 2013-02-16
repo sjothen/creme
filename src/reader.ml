@@ -1,5 +1,5 @@
+open Creme
 module L = Lexer
-module C = Creme
 
 exception Read_error of string * int * int * string
 
@@ -12,14 +12,14 @@ let err buf str =
 
 let token_to_creme buf t =
   match t with
-  | L.NUMBER n  -> C.Number n
-  | L.FLOAT f   -> C.Float f
-  | L.SYMBOL s  -> C.Symbol s
-  | L.STRING s  -> C.String s
-  | L.BOOLEAN b -> C.Boolean b
-  | L.CHAR c    -> C.Char c
-  | L.INERT     -> C.Inert
-  | L.IGNORE    -> C.Ignore
+  | L.NUMBER n  -> Number n
+  | L.FLOAT f   -> Float f
+  | L.SYMBOL s  -> Symbol s
+  | L.STRING s  -> String s
+  | L.BOOLEAN b -> Boolean b
+  | L.CHAR c    -> Char c
+  | L.INERT     -> Inert
+  | L.IGNORE    -> Ignore
   | L.RPAREN    -> err buf "expected atom, got closing paren"
   | L.LPAREN    -> err buf "expected atom, got opening paren"
   | L.LVECTOR   -> err buf "expected atom, got opening vector"
@@ -50,7 +50,7 @@ and read_vector buf =
         vec :: (aux buf)
     | atom     -> (token_to_creme buf atom) :: (aux buf)
   in
-  C.Vector (Array.of_list (aux buf))
+  Vector (Array.of_list (aux buf))
 and read_list buf fstcall =
   let tok = L.token buf in
   match tok with
@@ -71,37 +71,37 @@ and read_list buf fstcall =
         match par with
         | L.RPAREN  -> last
         | _         -> err buf "expected closing paren after dot and final atom")
-  | L.RPAREN -> C.Empty
+  | L.RPAREN -> Empty
   | L.LPAREN -> 
       let fst = read_list buf true in
       let snd = read_list buf false in
-      C.Pair (fst, snd)
+      Pair {car=fst; cdr=snd}
   | L.LVECTOR -> 
       let vec = read_vector buf in
-      C.Pair (vec, read_list buf false)
+      Pair {car=vec; cdr=read_list buf false}
   | t        ->
       let ntok = L.token buf in
       match ntok with
       | L.LPAREN ->
           let nlist = read_list buf true in
           let cont = read_list buf false in
-          C.Pair (token_to_creme buf t, C.Pair (nlist, cont))
+          Pair {car=token_to_creme buf t; cdr=Pair {car=nlist; cdr=cont}}
       | L.LVECTOR ->
           let vec = read_vector buf in
           let cont = read_list buf false in
-          C.Pair (token_to_creme buf t, C.Pair (vec, cont))
-      | L.RPAREN -> C.Pair (token_to_creme buf t, C.Empty)
+          Pair {car=token_to_creme buf t; cdr=Pair {car=vec; cdr=cont}}
+      | L.RPAREN -> Pair {car=token_to_creme buf t; cdr=Empty}
       | L.EOF    -> err buf "unexpected eof"
       | L.DOT    ->
           let cdr = L.token buf in
           let last = (match cdr with
           | L.RPAREN -> err buf "expected atom after dot in list"
           | L.EOF    -> err buf "unexpected eof"
-          | L.LPAREN -> C.Pair (token_to_creme buf t, read_list buf true)
-          | L.LVECTOR -> C.Pair (token_to_creme buf t, read_vector buf)
-          | s        -> C.Pair (token_to_creme buf t, token_to_creme buf cdr)) in
+          | L.LPAREN -> Pair {car=token_to_creme buf t; cdr=read_list buf true}
+          | L.LVECTOR -> Pair {car=token_to_creme buf t; cdr=read_vector buf}
+          | s        -> Pair {car=token_to_creme buf t; cdr=token_to_creme buf cdr}) in
           let par = L.token buf in
           (match par with
           | L.RPAREN -> last
           | _        -> err buf "expected closing paren after dot and final atom")
-      | u        -> C.Pair (token_to_creme buf t, C.Pair (token_to_creme buf u, read_list buf false))
+      | u        -> Pair {car=token_to_creme buf t; cdr=Pair {car=token_to_creme buf u; cdr=read_list buf false}}

@@ -16,11 +16,13 @@ let err s =
 
 let rec match_ptree env ptree args =
   match ptree, args with
-  | Ignore, _                  -> ()
-  | Empty, Empty               -> ()
-  | Symbol s, a                -> env_define env s a
-  | Pair (h, t), Pair (ah, at) -> match_ptree env h ah; match_ptree env t at
-  | x, y                       -> err ("could not match ptree " ^ (creme_to_string x) ^ " with " ^ (creme_to_string y))
+  | Ignore, _ -> ()
+  | Empty, Empty -> ()
+  | Symbol s, a -> env_define env s a
+  | Pair {car=h; cdr=t}, Pair {car=ah; cdr=at} ->
+      match_ptree env h ah; match_ptree env t at
+  | x, y ->
+      err ("could not match ptree " ^ (creme_to_string x) ^ " with " ^ (creme_to_string y))
 
 let rec creme_eval_operative dynenv staticenv formals envformal body args =
   let newenv = env_new (Some staticenv) in
@@ -31,20 +33,20 @@ and creme_eval_body e b =
   match b with
   | Empty ->
       Inert
-  | Pair (h, Empty) ->
+  | Pair {car=h; cdr=Empty} ->
       creme_eval e h
-  | Pair (h, t) ->
+  | Pair {car=h; cdr=t} ->
       ignore (creme_eval e h);
       creme_eval_body e t
   | _ -> err "$vau: unreachable"
 and creme_eval_list e p =
   match p with
   | Empty -> Empty
-  | Pair (h, t) -> Pair (creme_eval e h, creme_eval_list e t)
+  | Pair {car=h; cdr=t} -> Pair {car=creme_eval e h; cdr=creme_eval_list e t}
   | f -> err ("arg list must be a proper list; got " ^ (creme_to_string f))
 and creme_eval e c =
   match c with
-  | Pair (h, t)      ->
+  | Pair {car=h; cdr=t} ->
       (match creme_eval e h with
       | PrimOperative (_, f) -> f e t
       | Operative (se, f, es, b) -> creme_eval_operative e se f es b t
@@ -73,20 +75,20 @@ let def_applicative name fn =
 let vau env exp =
   match exp with
   (* This version of $vau only supports a single body item *)
-  | Pair (formals, Pair (envformal, body)) ->
-      (match formals, envformal with
+  | Pair {car=formals; cdr=Pair {car=eformal; cdr=body}} ->
+      (match formals, eformal with
       | Symbol _, Symbol _ | Ignore, Ignore
-      | Pair (_, _), Symbol _ | Symbol _, Ignore
-      | Pair (_, _), Ignore | Ignore, Symbol _
+      | Pair _, Symbol _ | Symbol _, Ignore
+      | Pair _, Ignore | Ignore, Symbol _
       | Empty, Ignore | Empty, Symbol _ ->
-          Operative (env, formals, envformal, body)
+          Operative (env, formals, eformal, body)
       | _ ->
           err "environment formal parameter must be symbol or #ignore")
   | _ -> err "incorrect form in $vau"
 
 let definef env exp =
   match exp with
-  | Pair (definiend, Pair (expression, Empty)) ->
+  | Pair {car=definiend; cdr=Pair {car=expression; cdr=Empty}} ->
       let eexp = creme_eval env expression in
       match_ptree env definiend eexp;
       Inert
@@ -94,35 +96,35 @@ let definef env exp =
 
 let wrap env exp =
   match exp with 
-  | Pair (Operative (_, _, _, _) as o, Empty) -> Applicative o
-  | Pair (PrimOperative (_, _) as po, Empty) -> Applicative po
+  | Pair {car=Operative (_, _, _, _) as o; cdr=Empty} -> Applicative o
+  | Pair {car=PrimOperative (_, _) as po; cdr=Empty} -> Applicative po
   | _ -> err "cannot wrap around non-operative"
 
 let unwrap env exp =
   match exp with
-  | Pair (Applicative o, Empty) -> o
+  | Pair {car=Applicative o; cdr=Empty} -> o
   | _ -> err "cannot unwrap non-applicative"
 
 let cons env exp =
   match exp with 
-  | Pair (a, Pair (b, Empty)) -> Pair (a, b)
+  | Pair {car=a; cdr=Pair {car=b; cdr=Empty}} -> Pair {car=a; cdr=b}
   | _ -> err "cons requires 2 arguments"
 
 let rec nullp env exp =
   match exp with
   | Empty -> t
-  | Pair (Empty, tail) -> nullp env tail
+  | Pair {car=Empty; cdr=tail} -> nullp env tail
   | _ -> f
 
 let rec pairp env exp =
   match exp with
   | Empty -> t
-  | Pair (Pair (_, _), tail) -> pairp env tail
+  | Pair {car=Pair p; cdr=tail} -> pairp env tail
   | _ -> f
 
 let rec eval env exp =
   match exp with
-  | Pair (expression, Pair (environment, Empty)) -> 
+  | Pair {car=expression; cdr=Pair {car=environment; cdr=Empty}} ->
       (match environment with
       | Enviro e -> creme_eval e expression
       | _ -> err "eval requires second argument to be environment")
@@ -136,24 +138,24 @@ let makeenv env exp =
 let rec envp env exp =
   match exp with
   | Empty -> t
-  | Pair (Enviro e, tail) -> envp env tail
+  | Pair {car=Enviro e; cdr=tail} -> envp env tail
   | _ -> f
 
 let rec ignorep env exp =
   match exp with
   | Empty -> t
-  | Pair (Ignore, tail) -> ignorep env tail
+  | Pair {car=Ignore; cdr=tail} -> ignorep env tail
   | _ -> f
 
 let rec inertp env exp =
   match exp with
   | Empty -> t
-  | Pair (Inert, tail) -> inertp env tail
+  | Pair {car=Inert; cdr=tail} -> inertp env tail
   | _ -> f
 
 let oif env exp =
   match exp with
-  | Pair (test, Pair (consequent, Pair (alternative, Empty))) ->
+  | Pair {car=test; cdr=Pair{car=consequent; cdr=Pair{car=alternative; cdr=Empty}}} ->
       let et = creme_eval env test in
       (match et with
       | Boolean true -> creme_eval env consequent
@@ -164,26 +166,26 @@ let oif env exp =
 let rec symbolp env exp =
   match exp with
   | Empty -> t
-  | Pair (Symbol s, tail) -> symbolp env tail
+  | Pair {car=Symbol s; cdr=tail} -> symbolp env tail
   | _ -> f
 
 let rec booleanp env exp =
   match exp with
   | Empty -> t
-  | Pair (Boolean b, tail) -> booleanp env tail
+  | Pair {car=Boolean b; cdr=tail} -> booleanp env tail
   | _ -> f
 
 let rec operativep env exp =
   match exp with
   | Empty -> t
-  | Pair (Operative (_, _, _, _), tail) -> operativep env tail
-  | Pair (PrimOperative (_, _), tail) -> operativep env tail
+  | Pair {car=Operative (_, _, _, _); cdr=tail} -> operativep env tail
+  | Pair {car=PrimOperative (_, _); cdr=tail} -> operativep env tail
   | _ -> f
 
 let rec applicativep env exp =
   match exp with
   | Empty -> t
-  | Pair (Applicative o, tail) -> applicativep env tail
+  | Pair {car=Applicative o; cdr=tail} -> applicativep env tail
   | _ -> f
 
 let to_float a =
@@ -211,7 +213,7 @@ let m = helper "*" ( *. ) BI.mult_big_int
 
 let twoarg name fn exp =
   match exp with
-  | Pair (a, Pair (b, Empty)) -> fn a b
+  | Pair {car=a; cdr=Pair {car=b; cdr=Empty}} -> fn a b
   | _ -> err (name ^ ": requires 2 arguments")
 
 let plus env exp = twoarg "+" p exp
@@ -241,13 +243,13 @@ let minus env exp =
 
 let neqp env exp =
   match exp with
-  | Pair (Number n, Pair (Number m, Empty)) ->
+  | Pair {car=Number n; cdr=Pair {car=Number m; cdr=Empty}} ->
       if BI.eq_big_int n m then t else f
   | _ -> err "=? requires two number arguments"
 
 let display env exp =
   match exp with
-  | Pair (h, Empty) ->
+  | Pair {car=h; cdr=Empty} ->
       (match h with
       | String s -> print_string s
       | Char c -> print_char c
@@ -258,51 +260,67 @@ let display env exp =
 
 let eqp env exp =
   match exp with
-  | Pair (fst, Pair (snd, Empty)) -> creme_cmp fst snd
+  | Pair {car=fst; cdr=Pair {car=snd; cdr=Empty}} -> creme_cmp fst snd
   | _ -> err "eq? requires 2 arguments"
 
 let gtep env exp =
   match exp with
-  | Pair (Number n, Pair (Number m, Empty)) -> Boolean (BI.ge_big_int n m)
+  | Pair {car=Number n; cdr=Pair {car=Number m; cdr=Empty}} -> Boolean (BI.ge_big_int n m)
   | _ -> err ">=? requires 2 number arguments"
 
 let ltep env exp =
   match exp with
-  | Pair (Number n, Pair (Number m, Empty)) -> Boolean (BI.le_big_int n m)
+  | Pair {car=Number n; cdr=Pair {car=Number m; cdr=Empty}} -> Boolean (BI.le_big_int n m)
   | x -> creme_print x; err "<=? requires 2 number arguments"
 
 let gtp env exp =
   match exp with
-  | Pair (Number n, Pair (Number m, Empty)) -> Boolean (BI.gt_big_int n m)
+  | Pair {car=Number n; cdr=Pair {car=Number m; cdr=Empty}} -> Boolean (BI.gt_big_int n m)
   | _ -> err ">? requires 2 number arguments"
 
 let ltp env exp =
   match exp with
-  | Pair (Number n, Pair (Number m, Empty)) -> Boolean (BI.lt_big_int n m)
+  | Pair {car=Number n; cdr=Pair {car=Number m; cdr=Empty}} -> Boolean (BI.lt_big_int n m)
   | _ -> err "<? requires 2 number arguments"
 
 let error env exp =
   match exp with
-  | Pair (String s, Empty) -> err s
+  | Pair {car=String s; cdr=Empty} -> err s
   | _ -> err "err: requires 1 argument"
 
 let rec seq env exp =
   match exp with
   | Empty ->
       Inert
-  | Pair (h, Empty) ->
+  | Pair {car=h; cdr=Empty} ->
       creme_eval env h
-  | Pair (h, t) ->
+  | Pair {car=h; cdr=t} ->
       ignore (creme_eval env h);
       seq env t
   | _ -> err "$sequence: unreachable"
 
 let lambda env exp =
   match exp with
-  | Pair (formals, body) ->
-      let op = vau env (Pair (formals, Pair (Ignore, body))) in
+  | Pair {car=formals; cdr=body} ->
+      let op = vau env (Pair {car=formals; cdr=Pair {car=Ignore; cdr=body}}) in
       Applicative op
   | _ -> err "$lambda: incorrect form"
+
+let setcar env exp =
+  match exp with
+  | Pair {car=var; cdr=Pair {car=value; cdr=Empty}} ->
+      (match var with
+      | Pair p -> p.car <- value; Inert
+      | _ -> err "set-car!: 1st argument must be a pair")
+  | _ -> err "set-car!: incorrect form"
+
+let setcdr env exp =
+  match exp with
+  | Pair {car=var; cdr=Pair {car=value; cdr=Empty}} ->
+      (match var with
+      | Pair p -> p.cdr <- value; Inert
+      | _ -> err "set-cdr!: 1st argument must be a pair")
+  | _ -> err "set-cdr!: incorrect form"
 
 let define_base () =
   def_operative "$lambda" lambda;
@@ -344,7 +362,9 @@ let define_base () =
   def_applicative "<=?" ltep;
   def_applicative ">?" gtp;
   def_applicative "<?" ltp;
-  def_applicative "error" error
+  def_applicative "error" error;
+  def_applicative "set-car!" setcar;
+  def_applicative "set-cdr!" setcdr
  
 let eval c =
   creme_eval toplevel c

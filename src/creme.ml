@@ -2,13 +2,14 @@ module H = Hashtbl
 module BI = Big_int
 
 type env = Env of env option * (string, creme) H.t
+and pair = { mutable car : creme; mutable cdr : creme }
 and creme = Number  of BI.big_int
           | Float   of float
           | Symbol  of string
           | String  of string
           | Char    of char
           | Boolean of bool
-          | Pair    of creme * creme
+          | Pair    of pair
           | Vector  of creme array
           | Enviro  of env
           | PrimOperative of string * (env -> creme -> creme)
@@ -55,7 +56,7 @@ let creme_cmp fst snd =
     | Empty, Empty -> true
     | Inert, Inert -> true
     | Ignore, Ignore -> true
-    | Pair (h, t), Pair (i, s) -> (cmpaux h i) && (cmpaux t s)
+    | Pair {car=h; cdr=t}, Pair {car=i; cdr=s} -> (cmpaux h i) && (cmpaux t s)
     | PrimOperative (n, f), PrimOperative (m, g) -> f == g
     | Operative (e1, f1, ef1, b1), Operative (e2, f2, ef2, b2) ->
         (e1 == e2) && (cmpaux f1 f2) && (cmpaux ef1 ef2) && (cmpaux b1 b2)
@@ -75,7 +76,7 @@ let rec creme_to_string x =
   | Char    c      -> "#\\" ^$ c 
   | Boolean true   -> "#t"
   | Boolean false  -> "#f"
-  | Pair    (h, t) -> "(" ^ (creme_inside h t) ^ ")"
+  | Pair {car=h; cdr=t} -> "(" ^ (creme_inside h t) ^ ")"
   | Vector  a      -> "#(" ^ (creme_inside_vec a) ^ ")"
   | Empty          -> "()"
   | Enviro  e      -> "#(environment)"
@@ -87,7 +88,7 @@ let rec creme_to_string x =
 and creme_inside h t =
   match t with
   | Empty         -> creme_to_string h
-  | Pair (hh, tt) -> (creme_to_string h) ^ " " ^ (creme_inside hh tt)
+  | Pair {car=hh; cdr=tt} -> (creme_to_string h) ^ " " ^ (creme_inside hh tt)
   | _             -> (creme_to_string h) ^ " . " ^ (creme_to_string t)
 and creme_inside_vec a =
   let rec loop arr s e =
