@@ -52,3 +52,9 @@ This means that unlike in Scheme, where macros aren't first-class, we get someth
 % time ./creme tests/fib-tail.crm > /dev/null 
 ./creme tests/fib-tail.crm > /dev/null  0.00s user 0.00s system 86% cpu 0.008 total
 ```
+
+### Optimizations
+
+While most of Kernel's features can be bootstrapped from a few primitives, it can lead to performance
+issues. The biggest performance gain was gotten by rewriting the `$sequence` operative in OCaml. Further
+performance gains were gotten by doing the same for `$vau` and `$lambda`.

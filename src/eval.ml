@@ -26,7 +26,17 @@ let rec creme_eval_operative dynenv staticenv formals envformal body args =
   let newenv = env_new (Some staticenv) in
   match_ptree newenv formals args;
   match_ptree newenv envformal (Enviro dynenv);
-  creme_eval newenv body
+  creme_eval_body newenv body
+and creme_eval_body e b =
+  match b with
+  | Empty ->
+      Inert
+  | Pair (h, Empty) ->
+      creme_eval e h
+  | Pair (h, t) ->
+      ignore (creme_eval e h);
+      creme_eval_body e t
+  | _ -> err "$vau: unreachable"
 and creme_eval_list e p =
   match p with
   | Empty -> Empty
@@ -63,7 +73,7 @@ let def_applicative name fn =
 let vau env exp =
   match exp with
   (* This version of $vau only supports a single body item *)
-  | Pair (formals, Pair (envformal, Pair (body, Empty))) ->
+  | Pair (formals, Pair (envformal, body)) ->
       (match formals, envformal with
       | Symbol _, Symbol _ | Ignore, Ignore
       | Pair (_, _), Symbol _ | Symbol _, Ignore
@@ -273,7 +283,27 @@ let error env exp =
   | Pair (String s, Empty) -> err s
   | _ -> err "err: requires 1 argument"
 
+let rec seq env exp =
+  match exp with
+  | Empty ->
+      Inert
+  | Pair (h, Empty) ->
+      creme_eval env h
+  | Pair (h, t) ->
+      ignore (creme_eval env h);
+      seq env t
+  | _ -> err "$sequence: unreachable"
+
+let lambda env exp =
+  match exp with
+  | Pair (formals, body) ->
+      let op = vau env (Pair (formals, Pair (Ignore, body))) in
+      Applicative op
+  | _ -> err "$lambda: incorrect form"
+
 let define_base () =
+  def_operative "$lambda" lambda;
+  def_operative "$sequence" seq;
   (* 4.1 *)
   def_applicative "boolean?" booleanp;
   (* 4.4 *)

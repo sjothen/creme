@@ -1,21 +1,21 @@
-($define! $sequence
-  ((wrap
-     ($vau ($seq2) #ignore
-          ($seq2
-            ($define! $aux
-              ($vau (head . tail) env
-                   ($if (null? tail)
-                     (eval head env)
-                     ($seq2
-                       (eval head env)
-                       (eval (cons $aux tail) env)))))
-            ($vau body env
-                 ($if (null? body)
-                   #inert
-                   (eval (cons $aux body) env))))))
-   ($vau (first second) env
-        ((wrap ($vau #ignore #ignore (eval second env)))
-         (eval first env)))))
+;($define! $sequence
+;  ((wrap
+;     ($vau ($seq2) #ignore
+;          ($seq2
+;            ($define! $aux
+;              ($vau (head . tail) env
+;                   ($if (null? tail)
+;                     (eval head env)
+;                     ($seq2
+;                       (eval head env)
+;                       (eval (cons $aux tail) env)))))
+;            ($vau body env
+;                 ($if (null? body)
+;                   #inert
+;                   (eval (cons $aux body) env))))))
+;   ($vau (first second) env
+;        ((wrap ($vau #ignore #ignore (eval second env)))
+;         (eval first env)))))
 
 ($define! list (wrap ($vau x #ignore x)))
 
@@ -30,18 +30,18 @@
             (aux args)))))
 
 
-($define! $vau
-  ((wrap ($vau ($vau) #ignore
-            ($vau (formals eformal . body) env
-              (eval (list $vau formals eformal
-                        (cons $sequence body))
-                    env))))
-    $vau))
+;($define! $vau
+;  ((wrap ($vau ($vau) #ignore
+;            ($vau (formals eformal . body) env
+;              (eval (list $vau formals eformal
+;                        (cons $sequence body))
+;                    env))))
+;    $vau))
 
-($define! $lambda
-  ($vau (formals . body) env
-    (wrap (eval (list* $vau formals #ignore body)
-                env))))
+;($define! $lambda
+;  ($vau (formals . body) env
+;    (wrap (eval (list* $vau formals #ignore body)
+;                env))))
 
 ($define! quote ($vau (x) #ignore x))
 
