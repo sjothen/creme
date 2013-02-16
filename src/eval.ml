@@ -252,6 +252,7 @@ let display env exp =
       | String s -> print_string s
       | Char c -> print_char c
       | f -> print_string (creme_to_string f));
+      flush stdout;
       Inert
   | _ -> err "display requires 1 argument"
 
