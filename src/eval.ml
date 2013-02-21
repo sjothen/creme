@@ -50,7 +50,8 @@ and creme_eval e c =
       (match creme_eval e h with
       | PrimOperative (_, f) -> f e t
       | Operative (se, f, es, b) -> creme_eval_operative e se f es b t
-      (* Applicative is a wrapper around a PrimOperative *)
+      (* Applicative is a wrapper around a PrimOperative or a user-defined
+       * Operative *)
       | Applicative (PrimOperative (_, f)) ->
             let el = creme_eval_list e t in
             f e el
@@ -219,26 +220,6 @@ let plus env exp = twoarg "+" p exp
 let mult env exp = twoarg "*" m exp
 let subt env exp = twoarg "-" s exp
 let divd env exp = twoarg "/" d exp
-
-(*
-let binop env exp fn start =
-  let rec aux ns acc =
-    match ns with
-    | Empty -> acc
-    | Pair (Number b, Empty) -> fn acc b
-    | Pair (Number b, t) -> aux t (fn acc b)
-    | _ -> err "+ requires number arguments"
-  in
-  Number (aux exp start)
-
-let plus env exp = binop env exp BI.add_big_int BI.zero_big_int
-let mult env exp = binop env exp BI.mult_big_int BI.unit_big_int
-
-let minus env exp =
-  match exp with
-  | Pair (Number a, Pair (Number b, Empty)) ->  Number (BI.sub_big_int a b)
-  | _ -> err "- requires two number arguments"
-*)
 
 let neqp env exp =
   match exp with
